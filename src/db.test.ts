@@ -7,6 +7,24 @@ beforeEach(async () => {
   await initialize();
 });
 describe("IndexedDB persistence", () => {
+  it("persists answer controls and supports older backups without the preference", async () => {
+    await update((s) => {
+      s.settings.quickStopAnswerMode = "typed";
+    });
+    db.close();
+    await db.open();
+    expect((await db.state.get("main"))?.settings.quickStopAnswerMode).toBe(
+      "typed",
+    );
+    const exported = JSON.parse(await exportState());
+    expect(validateBackup(exported).settings.quickStopAnswerMode).toBe("typed");
+    delete exported.state.settings.quickStopAnswerMode;
+    expect(
+      validateBackup(exported).settings.quickStopAnswerMode,
+    ).toBeUndefined();
+    exported.state.settings.quickStopAnswerMode = "invalid";
+    expect(() => validateBackup(exported)).toThrow(/invalid game state/);
+  });
   it("serializes concurrent score changes without losing points", async () => {
     await update((s) => addPlayer(s, "Alex", "🌞"));
     await Promise.all(

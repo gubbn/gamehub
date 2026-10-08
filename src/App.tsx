@@ -260,7 +260,6 @@ export default function App() {
   const [playerName, setPlayerName] = useState(""),
     [avatar, setAvatar] = useState(avatars[0]),
     [answer, setAnswer] = useState(""),
-    [recordAnswers, setRecordAnswers] = useState(false),
     [custom, setCustom] = useState(""),
     [sessionName, setSessionName] = useState("Game night"),
     [resetSession, setResetSession] = useState(true),
@@ -507,6 +506,29 @@ export default function App() {
       </div>
     );
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
+  const typedAnswers = state.settings.quickStopAnswerMode === "typed";
+  const answerControls = (
+    <label className="answer-mode">
+      Answer controls
+      <select
+        value={typedAnswers ? "typed" : "spoken"}
+        disabled={!!round?.challenge}
+        onChange={(e) => {
+          const mode = e.target.value as "spoken" | "typed";
+          run(() =>
+            update((s) => {
+              s.settings.quickStopAnswerMode = mode;
+            }),
+          ).then((ok) => {
+            if (ok) setAnswer("");
+          });
+        }}
+      >
+        <option value="spoken">Tick / cross · spoken answers</option>
+        <option value="typed">Type answers</option>
+      </select>
+    </label>
+  );
   const champion =
     state.settings.target > 0
       ? sorted.find((p) => p.score >= state.settings.target)
@@ -1642,56 +1664,72 @@ export default function App() {
                               </small>
                             </span>
                           </div>
-                          <button
-                            className="record-toggle text-button"
-                            aria-pressed={recordAnswers}
-                            aria-controls="answer-entry"
-                            onClick={() => {
-                              setRecordAnswers(!recordAnswers);
-                              setAnswer("");
-                            }}
-                          >
-                            {recordAnswers
-                              ? "Playing out loud instead?"
-                              : "Record answers (optional)"}
-                          </button>
+                          {answerControls}
                           <form
-                            className={`answer-form ${recordAnswers ? "recording" : ""}`}
+                            className="answer-form"
                             onSubmit={(e) => {
                               e.preventDefault();
                               run(() =>
                                 update((s) => {
                                   const r = activeRound(s)!;
-                                  acceptAnswer(s, r, answer);
+                                  acceptAnswer(
+                                    s,
+                                    r,
+                                    typedAnswers ? answer : "",
+                                  );
                                 }),
                               ).then((ok) => {
                                 if (ok) setAnswer("");
                               });
                             }}
                           >
-                            <div id="answer-entry" className="answer-entry">
-                              <input
-                                value={answer}
-                                aria-label="Player answer"
-                                placeholder={`Answer beginning with ${round.letter}`}
-                                autoComplete="off"
-                                enterKeyHint="done"
-                                maxLength={100}
-                                onChange={(e) => setAnswer(e.target.value)}
+                            {typedAnswers && (
+                              <div className="answer-entry">
+                                <input
+                                  value={answer}
+                                  aria-label="Player answer"
+                                  placeholder={`Answer beginning with ${round.letter}`}
+                                  autoComplete="off"
+                                  enterKeyHint="done"
+                                  maxLength={100}
+                                  required
+                                  onChange={(e) => setAnswer(e.target.value)}
+                                  disabled={!!round.challenge}
+                                />
+                              </div>
+                            )}
+                            <div className="turn-verdicts">
+                              <button
+                                className="turn-survived"
                                 disabled={!!round.challenge}
-                              />
+                                type="submit"
+                              >
+                                <Check size={26} />
+                                {typedAnswers ? "Valid answer" : "Survived"}
+                              </button>
+                              <button
+                                className="turn-out"
+                                disabled={!!round.challenge}
+                                type="button"
+                                onClick={() =>
+                                  run(() =>
+                                    update((s) => {
+                                      const r = activeRound(s)!;
+                                      eliminate(s, r, r.current);
+                                    }),
+                                  ).then((ok) => {
+                                    if (ok) setAnswer("");
+                                  })
+                                }
+                              >
+                                <X size={26} /> Out
+                              </button>
                             </div>
-                            <button
-                              className="primary"
-                              disabled={!!round.challenge}
-                              type="submit"
-                            >
-                              Valid answer <Check size={17} />
-                            </button>
                           </form>
                           <p className="answer-hint">
-                            Playing out loud? Leave the answer blank and tap
-                            “Valid answer”.
+                            {typedAnswers
+                              ? "Record a valid answer, or tap ✕ if the player is out."
+                              : "Say the answer aloud. ✓ keeps the player in; ✕ eliminates them. Both move to the next player."}
                           </p>
                           <div className="round-timer">
                             <div
@@ -1728,23 +1766,6 @@ export default function App() {
                                   <Play size={16} />
                                 )}{" "}
                                 {round.deadline ? "Pause timer" : "Start turn"}
-                              </button>
-                              <button
-                                className="text-button danger"
-                                disabled={!!round.challenge}
-                                onClick={() =>
-                                  run(() =>
-                                    update((s) => {
-                                      eliminate(
-                                        s,
-                                        activeRound(s)!,
-                                        activeRound(s)!.current,
-                                      );
-                                    }),
-                                  ).then(() => setAnswer(""))
-                                }
-                              >
-                                No answer / player out
                               </button>
                             </div>
                           </div>
@@ -2607,6 +2628,7 @@ export default function App() {
                   </div>
                   {modal.game === "quick-stop" && (
                     <>
+                      {answerControls}
                       <label>
                         Choose your category pack
                         <select

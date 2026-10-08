@@ -27,6 +27,28 @@ describe("offline gameplay", () => {
     s = crew();
   });
   afterEach(() => vi.useRealTimers());
+  it("keeps a spoken-answer survivor in and advances to the next player", () => {
+    vi.useFakeTimers();
+    const r = startRound(s, "quick-stop");
+    const first = r.current;
+    const active = [...r.active];
+    acceptAnswer(s, r, "");
+    expect(r.answers).toEqual([{ player: first, text: "Spoken answer" }]);
+    expect(r.active).toEqual(active);
+    expect(r.current).toBe(s.players[1].id);
+    expect(r.deadline).toBe(Date.now() + r.duration * 1000);
+    expect(s.players.every((p) => p.score === 0)).toBe(true);
+  });
+  it("marks only the current player out and pauses the next turn", () => {
+    const r = startRound(s, "quick-stop");
+    const first = r.current;
+    eliminate(s, r, first);
+    expect(r.active).not.toContain(first);
+    expect(r.active).toHaveLength(2);
+    expect(r.current).toBe(s.players[1].id);
+    expect(r.deadline).toBeNull();
+    expect(r.answers).toHaveLength(0);
+  });
   it("eliminates players and awards the last player exactly once", () => {
     const r = startRound(s, "quick-stop");
     eliminate(s, r, s.players[0].id);

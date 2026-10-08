@@ -1562,7 +1562,47 @@ hr {
 }
 .answer-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+}
+.answer-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #766089;
+}
+.answer-mode select {
+  min-height: 44px;
+  width: 100%;
+  font-size: 16px;
+}
+.turn-verdicts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.answer-form .turn-verdicts button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 64px;
+  border: 1px solid;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.turn-survived {
+  background: #e7f3eb;
+  border-color: #afd3bb !important;
+  color: #285b3e;
+}
+.turn-out {
+  background: #fbeae7;
+  border-color: #e8b8ae !important;
+  color: #933c30;
 }
 .answer-form input {
   font-size: 11px;
@@ -1571,8 +1611,9 @@ hr {
   font-size: 11px;
 }
 .answer-hint {
-  font-size: 9px;
-  color: #b0a1a9;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #77678b;
   margin-top: 8px;
 }
 .round-timer {
@@ -3254,8 +3295,7 @@ hr {
 /* Phone layouts: reachable navigation, readable forms and comfortable taps. */
 .mobile-tabs,
 .drawer-close,
-.tool-shortcuts,
-.record-toggle {
+.tool-shortcuts {
   display: none;
 }
 .answer-entry {
@@ -3637,21 +3677,9 @@ hr {
     font-size: 12px;
     color: #77678b;
   }
-  .record-toggle {
-    display: flex;
-    align-self: flex-start;
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
   .answer-form {
     flex-direction: column;
     gap: 10px;
-  }
-  .answer-form .answer-entry {
-    display: none;
-  }
-  .answer-form.recording .answer-entry {
-    display: block;
   }
   .answer-form input {
     font-size: 16px;
@@ -3659,9 +3687,6 @@ hr {
   .main-content .answer-form button {
     font-size: 16px;
     min-height: 50px;
-  }
-  .answer-hint {
-    display: none;
   }
   .round-timer {
     margin: 16px 0;

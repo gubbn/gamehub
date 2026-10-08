@@ -73,7 +73,7 @@ Supabase references: [RLS](https://supabase.com/docs/guides/database/postgres/ro
 
 ## Mobile interface
 
-Phones use a fixed Home / Games / Tools / Scores / More bar, a sticky header, and safe-area spacing for home indicators and camera cutouts. Controls are at least 44px tall and form text is 16px to avoid automatic input zoom. Dialogs become scrollable bottom sheets and trap focus while keeping the background still. Tools have quick-jump shortcuts; scoreboard cards keep all point adjustments available on small screens. Quick Stop defaults to spoken answers on phones, with an optional recording field, while desktop keeps the original typed-answer layout.
+Phones use a fixed Home / Games / Tools / Scores / More bar, a sticky header, and safe-area spacing for home indicators and camera cutouts. Controls are at least 44px tall and form text is 16px to avoid automatic input zoom. Dialogs become scrollable bottom sheets and trap focus while keeping the background still. Tools have quick-jump shortcuts; scoreboard cards keep all point adjustments available on small screens. Quick Stop defaults to spoken answers on all screen sizes: tap ✓ Survived for a valid spoken answer, or ✕ Out to eliminate the current player. Choose Type answers under Answer controls in setup or during play to record answers and check their letter and repeats. The choice is saved across reloads and backups; existing backups remain compatible. Spoken-answer validation remains the group's responsibility. Timers and challenges still apply.
 
 ## Eli Zone
 

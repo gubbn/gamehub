@@ -125,6 +125,8 @@ export function validateBackup(value: unknown): State {
     ![10, 20, 0].includes(s.settings.target) ||
     typeof s.settings.easyLetters !== "boolean" ||
     typeof s.settings.challenges !== "boolean" ||
+    (s.settings.quickStopAnswerMode !== undefined &&
+      !["spoken", "typed"].includes(s.settings.quickStopAnswerMode)) ||
     (s.activeRound !== null && !s.rounds.some((r) => r.id === s.activeRound)) ||
     !Number.isFinite(s.toolTimer.duration) ||
     s.toolTimer.duration <= 0 ||

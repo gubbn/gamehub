@@ -19,6 +19,7 @@ export type Settings = {
   target: number;
   challenges: boolean;
   sound: boolean;
+  quickStopAnswerMode?: "spoken" | "typed";
 };
 export type Round = {
   id: string;
@@ -92,6 +93,7 @@ export function initialState(): State {
       target: 10,
       challenges: true,
       sound: false,
+      quickStopAnswerMode: "spoken",
     },
     installed: ["family"],
     custom: [],
