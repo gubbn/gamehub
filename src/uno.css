@@ -1,0 +1,388 @@
+.uno-zone {
+  display: grid;
+  gap: 20px;
+  max-width: 900px;
+}
+.uno-zone .panel {
+  padding: 24px;
+}
+.uno-zone h2 {
+  font-size: 23px;
+  margin: 8px 0 10px;
+}
+.uno-zone p {
+  line-height: 1.6;
+}
+.uno-intro {
+  background: linear-gradient(110deg, #f0eafe, #fdf6e9);
+}
+.uno-intro > p {
+  margin: 0 0 16px;
+  color: #6a6077;
+}
+.uno-zone.playing .uno-intro > p,
+.uno-zone.playing .uno-intro > .eyebrow {
+  display: none;
+}
+.uno-zone.playing .uno-intro h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.uno-rules summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 12px 0;
+}
+.uno-rules ol {
+  padding-left: 22px;
+  line-height: 1.7;
+}
+.uno-rules li {
+  margin-bottom: 7px;
+}
+.uno-rules p,
+.uno-note {
+  color: #77678b;
+  font-size: 12px;
+}
+.uno-variants,
+.uno-names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.uno-variants button {
+  border: 1px solid #ded5ec;
+  background: #faf8fe;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: left;
+  color: #544563;
+}
+.uno-variants button[aria-pressed="true"] {
+  border-color: #6155d9;
+  box-shadow: inset 0 0 0 1px #6155d9;
+  background: #ece8fc;
+}
+.uno-variants strong,
+.uno-variants span {
+  display: block;
+}
+.uno-variants span {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.uno-names label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.uno-zone input {
+  min-width: 0;
+  width: 100%;
+  font-size: 16px;
+}
+.uno-game-top,
+.uno-board-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.uno-game-top > span:last-child,
+.uno-board-heading > span {
+  font-size: 12px;
+  color: #77678b;
+}
+.uno-progress {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+.uno-progress > div {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f7f5f8;
+  border: 1px solid #e9e3ee;
+}
+.uno-progress > div.current {
+  background: #eee9fc;
+  border-color: #c9beeb;
+}
+.uno-progress strong,
+.uno-progress span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.uno-progress span {
+  font-size: 12px;
+  color: #77678b;
+  margin-top: 5px;
+}
+.uno-message {
+  background: #f6f1e9;
+  border-radius: 12px;
+  padding: 14px;
+  color: #5e516a;
+  min-height: 52px;
+}
+.uno-board-heading h3 {
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+}
+.uno-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.uno-slot {
+  min-width: 0;
+}
+.uno-slot-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  color: #77678b;
+}
+.uno-card {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  box-shadow: 0 2px 6px #2928381a;
+  overflow: hidden;
+}
+.uno-card:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.uno-card.target {
+  outline: 3px solid #6155d9;
+  outline-offset: 3px;
+  cursor: pointer;
+}
+.uno-face,
+.uno-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+}
+.uno-back {
+  background: repeating-linear-gradient(
+    135deg,
+    #625286,
+    #625286 8px,
+    #706093 8px,
+    #706093 10px
+  );
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #eee5fc;
+}
+.uno-back span {
+  font-size: 26px;
+  font-weight: 700;
+}
+.uno-face strong {
+  align-self: center;
+  font-size: clamp(24px, 4vw, 45px);
+  line-height: 1;
+}
+.uno-face small:last-child {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+.uno-red {
+  background: #ad473e;
+  color: #fff;
+}
+.uno-yellow {
+  background: #f4cf6d;
+  color: #564311;
+}
+.uno-green {
+  background: #337253;
+  color: #fff;
+}
+.uno-blue {
+  background: #416ea7;
+  color: #fff;
+}
+.uno-draw-area {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #ece5f0;
+}
+.uno-draw-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 12px;
+  color: #77678b;
+  margin-bottom: 14px;
+}
+.uno-draw {
+  width: 100%;
+  min-height: 52px;
+}
+.uno-held {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.uno-held > .uno-card {
+  width: 82px;
+  flex-shrink: 0;
+}
+.uno-held > div:last-child {
+  min-width: 0;
+  max-width: 280px;
+}
+.uno-held strong {
+  display: block;
+  font-size: 20px;
+  margin-top: 6px;
+}
+.uno-held p {
+  font-size: 12px;
+  color: #77678b;
+}
+.uno-handoff,
+.uno-winner {
+  text-align: center;
+  padding: 32px 12px;
+  color: #615582;
+}
+.uno-handoff h3,
+.uno-winner h3 {
+  overflow-wrap: anywhere;
+  font-size: 22px;
+}
+.uno-new-game {
+  margin-top: 20px;
+  border-top: 1px solid #ece5f0;
+  padding-top: 12px;
+}
+.uno-new-game .text-button {
+  min-height: 44px;
+}
+.uno-error {
+  padding: 14px;
+  background: #fbeae7;
+  color: #933c30;
+  border-radius: 12px;
+}
+.uno-banner {
+  margin-bottom: 20px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  text-align: left;
+  color: #615582;
+  background: #f3edf9;
+}
+.uno-banner > span {
+  flex: 1;
+}
+.uno-banner strong,
+.uno-banner small {
+  display: block;
+}
+.uno-banner small {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #77678b;
+}
+@media (max-width: 760px), (max-width: 980px) and (max-height: 500px) {
+  .uno-zone .panel {
+    padding: 16px;
+  }
+  .uno-variants,
+  .uno-names {
+    gap: 8px;
+  }
+  .uno-variants button {
+    padding: 12px;
+  }
+  .uno-variants strong {
+    font-size: 14px;
+  }
+  .uno-board {
+    gap: 8px;
+  }
+  .uno-card {
+    border-width: 2px;
+    border-radius: 8px;
+  }
+  .uno-face,
+  .uno-back {
+    padding: 4px;
+  }
+  .uno-face small {
+    font-size: 9px;
+  }
+  .uno-back svg {
+    width: 16px;
+    height: 16px;
+  }
+  .uno-back span {
+    font-size: 20px;
+  }
+  .uno-board-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    margin-bottom: 12px;
+  }
+  .uno-board-heading h3 {
+    margin-bottom: 4px;
+  }
+  .uno-held {
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .uno-held > .uno-card {
+    width: 65px;
+  }
+  .uno-held button {
+    font-size: 13px;
+    padding: 10px;
+  }
+  .uno-progress {
+    gap: 8px;
+  }
+  .uno-progress > div {
+    padding: 10px;
+  }
+  .uno-game-top {
+    flex-wrap: wrap;
+  }
+  .uno-banner {
+    padding: 16px;
+  }
+}
+@media (max-width: 360px) {
+  .uno-board {
+    gap: 4px;
+  }
+}

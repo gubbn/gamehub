@@ -83,6 +83,12 @@ The Picture library accepts named JPG, PNG or WebP images (up to 8 MB each, 100 
 
 Spoken prompts use an available English **local device voice** only, when the parent taps Hear the word. No microphone, speech recognition, network voice service or automatic narration is used. If the device has no suitable voice, the app prompts the parent to read aloud. Offline speech availability depends on installed device voices. The starter illustrations are code-native graphics based on the existing Lucide icon system, so they are bundled and cached with the app.
 
+## Uno variants
+
+Open **Uno variants** from Home, All games or the navigation menu. **Two-player solitaire** deals a separate face-down 2×5 board to each player, with target slots 0–9. Draw a number, place it in its matching slot and continue with the card revealed underneath. A drawn or revealed number whose slot is already complete is discarded and ends the turn. A handoff screen hides the next player's board until they are ready. The first completed board wins. **Solo practice** uses the same rules, with duplicates starting a new turn instead of changing players.
+
+This is a house-rule variant, not official Uno gameplay. The bundled number-only deck has 76 cards (one zero and two of each 1–9 per colour); colours do not affect placement, and action/wild cards are omitted. Discards are reshuffled only when the draw pile runs out. Card art is original HTML/CSS, with no external image dependencies. The game, including face-down cards and a pending swap, is saved atomically in the main IndexedDB state and included in Settings backup export/import. Existing backups without Uno games remain compatible. It does not change the family scoreboard. Hidden cards are concealed in the interface, not encrypted against someone inspecting browser storage.
+
 ## Verification
 
 Unit tests cover winner scoring, challenges, deadline enforcement, repeat prevention, pack separation, deck uniqueness, concurrent IndexedDB writes, persistence after database reopen, and backup restore. Browser QA checks player creation, round play, challenges, score persistence, game tools and responsive views. To check offline behaviour manually, stop the preview server and reload the already-cached app.

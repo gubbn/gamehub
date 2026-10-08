@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import { initialState, type State } from "./engine";
 import type { Card } from "./random";
+import { validUno } from "./uno";
 function validCard(card: unknown): card is Card {
   const c = card as Card;
   return (
@@ -137,6 +138,8 @@ export function validateBackup(value: unknown): State {
   )
     throw new Error("The backup contains invalid game state.");
   const copy = structuredClone(s);
+  if (s.uno !== undefined && !validUno(s.uno))
+    throw new Error("The backup contains an invalid Uno game.");
   copy.id = crypto.randomUUID();
   copy.revision = 0;
   copy.lastBackupRevision = -1;

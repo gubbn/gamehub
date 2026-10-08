@@ -6,6 +6,7 @@ import {
   type PackId,
 } from "./data";
 import { letters, newDeck, nextUnused, pick, type Card } from "./random";
+import type { UnoGame } from "./uno";
 export type Player = {
   id: string;
   name: string;
@@ -74,6 +75,7 @@ export type State = {
   toolTimer: { duration: number; remaining: number; deadline: number | null };
   lastBackupRevision: number;
   lastBackupAt?: string;
+  uno?: UnoGame;
 };
 export function initialState(): State {
   const session = {

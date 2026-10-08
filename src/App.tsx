@@ -61,6 +61,7 @@ import { games, packs, categoriesFor, type GameId, type PackId } from "./data";
 import { cardLabel, newDeck, pick, randomInt, letters } from "./random";
 import { cloud, backup, listBackups, restore } from "./cloud";
 import { EliZone } from "./EliZone";
+import { UnoZone } from "./UnoZone";
 
 type Screen =
   | "home"
@@ -71,6 +72,7 @@ type Screen =
   | "history"
   | "settings"
   | "eli"
+  | "uno"
   | "play";
 type Modal = {
   type: "players" | "setup" | "rules" | "session" | "confirm";
@@ -101,6 +103,7 @@ const nav = [
   { id: "packs", label: "Game packs", icon: Layers },
   { id: "history", label: "Our memories", icon: History },
   { id: "eli", label: "Eli Zone", icon: Shapes },
+  { id: "uno", label: "Uno variants", icon: Layers },
 ] as const;
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -117,6 +120,7 @@ function initialScreen(): Screen {
     "history",
     "settings",
     "eli",
+    "uno",
     "play",
   ].includes(name)
     ? (name as Screen)
@@ -622,6 +626,7 @@ export default function App() {
     history: "The good times, remembered.",
     settings: "Make yourself at home.",
     eli: "Eli Zone",
+    uno: "Uno variants",
     play:
       games.find((g) => g.id === round?.game)?.name ?? "Ready when you are.",
   }[screen];
@@ -746,35 +751,39 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                {screen === "eli"
-                  ? "A LITTLE WORLD TO EXPLORE"
-                  : screen === "home"
-                    ? "LESS SCROLLING. MORE LAUGHING."
-                    : screen === "play"
-                      ? "LET’S PLAY"
-                      : screen === "history"
-                        ? "YOUR HOLIDAY STORY"
-                        : "THE GAME NIGHT ESSENTIALS"}
+                {screen === "uno"
+                  ? "A NEW TWIST ON CARD NIGHT"
+                  : screen === "eli"
+                    ? "A LITTLE WORLD TO EXPLORE"
+                    : screen === "home"
+                      ? "LESS SCROLLING. MORE LAUGHING."
+                      : screen === "play"
+                        ? "LET’S PLAY"
+                        : screen === "history"
+                          ? "YOUR HOLIDAY STORY"
+                          : "THE GAME NIGHT ESSENTIALS"}
               </div>
               <h1>{title}</h1>
               <p>
-                {screen === "eli"
-                  ? "Simple pictures. Gentle games. Little discoveries together."
-                  : screen === "home"
-                    ? "Bring your favourite people. We’ll bring the games."
-                    : screen === "games"
-                      ? "Pick a game, gather your people and jump right in."
-                      : screen === "tools"
-                        ? "Letters, numbers, dice and cards. All in your pocket."
-                        : screen === "scores"
-                          ? "Every point counts. Bragging rights included."
-                          : screen === "packs"
-                            ? "Save a pack now. Play it wherever the holiday takes you."
-                            : screen === "history"
-                              ? "Every round and every holiday champion, saved here."
-                              : screen === "settings"
-                                ? "Your games are saved here, with or without Wi-Fi."
-                                : "Pass the phone around, or keep it in the middle of the table."}
+                {screen === "uno"
+                  ? "A little luck. A chain of swaps. Race to put every number in place."
+                  : screen === "eli"
+                    ? "Simple pictures. Gentle games. Little discoveries together."
+                    : screen === "home"
+                      ? "Bring your favourite people. We’ll bring the games."
+                      : screen === "games"
+                        ? "Pick a game, gather your people and jump right in."
+                        : screen === "tools"
+                          ? "Letters, numbers, dice and cards. All in your pocket."
+                          : screen === "scores"
+                            ? "Every point counts. Bragging rights included."
+                            : screen === "packs"
+                              ? "Save a pack now. Play it wherever the holiday takes you."
+                              : screen === "history"
+                                ? "Every round and every holiday champion, saved here."
+                                : screen === "settings"
+                                  ? "Your games are saved here, with or without Wi-Fi."
+                                  : "Pass the phone around, or keep it in the middle of the table."}
               </p>
             </div>
             {(screen === "home" || screen === "games") && (
@@ -815,6 +824,19 @@ export default function App() {
             </button>
           )}
           {screen === "eli" && <EliZone />}
+          {screen === "uno" && <UnoZone state={state} />}
+          {(screen === "home" || screen === "games") && (
+            <button className="panel uno-banner" onClick={() => go("uno")}>
+              <Layers size={30} />
+              <span>
+                <strong>Uno variants</strong>
+                <small>
+                  Two-player solitaire and solo practice · Race to 0–9
+                </small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
+          )}
           {(screen === "home" || screen === "games") && (
             <>
               {screen === "home" && (
