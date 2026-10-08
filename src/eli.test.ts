@@ -24,6 +24,22 @@ const backup = () => ({
   library: { ...newEliLibrary(), pictures: [photo] },
 });
 describe("Eli picture recognition", () => {
+  it("supports older backups and validates card colour choices", () => {
+    const old = backup();
+    delete old.library.palette;
+    expect(validateEliBackup(old).palette).toBe("sage");
+    for (const palette of ["sage", "sand", "rose", "sky"] as const)
+      expect(
+        validateEliBackup({ ...old, library: { ...old.library, palette } })
+          .palette,
+      ).toBe(palette);
+    expect(() =>
+      validateEliBackup({
+        ...old,
+        library: { ...old.library, palette: "bad" },
+      }),
+    ).toThrow(/valid Eli Zone/);
+  });
   it("starts with 30 uniquely named pictures in five categories", () => {
     expect(starterPictures).toHaveLength(30);
     expect(new Set(starterPictures.map((p) => p.id)).size).toBe(30);
@@ -109,6 +125,7 @@ describe("Eli Zone offline storage", () => {
       l.hidden.push("dog");
       l.choices = 4;
       l.showWords = true;
+      l.palette = "rose";
     });
     eliDb.close();
     await eliDb.open();
@@ -117,6 +134,7 @@ describe("Eli Zone offline storage", () => {
     expect(saved.hidden).toEqual(["dog"]);
     expect(saved.choices).toBe(4);
     expect(saved.showWords).toBe(true);
+    expect(saved.palette).toBe("rose");
     await initializeEli();
     expect((await eliDb.library.get("main"))!.pictures).toEqual([photo]);
   });

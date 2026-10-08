@@ -1,52 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
-  Apple,
   ArrowLeft,
   ArrowRight,
-  Banana,
-  BedDouble,
-  Bike,
-  Bird,
   BookOpen,
-  Bus,
-  Car,
-  Carrot,
-  Cat,
   Check,
-  Cherry,
-  Circle,
-  Cloud,
-  Cookie,
-  CupSoda,
-  Diamond,
-  Dog,
   Download,
   Eye,
-  Fish,
-  Flower2,
   Heart,
-  House,
   ImagePlus,
-  Moon,
-  Pizza,
   Plus,
-  Rabbit,
   Search,
-  Shapes,
-  Snowflake,
   Sparkles,
-  Square,
-  Star,
-  Sun,
-  TreePine,
-  Triangle,
-  Turtle,
   Upload,
   Volume2,
 } from "lucide-react";
 import {
   allPictures,
+  eliPalettes,
+  starterPictures,
   pictureCategories,
   playablePictures,
   recognitionQuestion,
@@ -56,72 +28,8 @@ import {
 } from "./eli-data";
 import { eliDb, initializeEli, preparePicture, updateEli } from "./eli-db";
 import { pick } from "./random";
+import { EliPicture as PictureArt } from "./EliPicture";
 import "./eli.css";
-
-const pictureIcons = {
-  cat: Cat,
-  dog: Dog,
-  bird: Bird,
-  fish: Fish,
-  rabbit: Rabbit,
-  turtle: Turtle,
-  apple: Apple,
-  banana: Banana,
-  cherry: Cherry,
-  carrot: Carrot,
-  cookie: Cookie,
-  pizza: Pizza,
-  house: House,
-  car: Car,
-  bus: Bus,
-  bike: Bike,
-  bed: BedDouble,
-  cup: CupSoda,
-  circle: Circle,
-  square: Square,
-  triangle: Triangle,
-  star: Star,
-  heart: Heart,
-  diamond: Diamond,
-  sun: Sun,
-  moon: Moon,
-  cloud: Cloud,
-  tree: TreePine,
-  flower: Flower2,
-  snowflake: Snowflake,
-};
-function PictureArt({
-  picture,
-  hiddenLabel = false,
-}: {
-  picture: Picture;
-  hiddenLabel?: boolean;
-}) {
-  const Icon = pictureIcons[picture.id as keyof typeof pictureIcons];
-  return (
-    <div
-      className="eli-picture-art"
-      style={{ "--picture-color": picture.color } as React.CSSProperties}
-    >
-      {picture.image ? (
-        <img
-          src={picture.image}
-          alt={hiddenLabel ? "" : picture.label}
-          draggable={false}
-        />
-      ) : Icon ? (
-        <Icon
-          role={hiddenLabel ? undefined : "img"}
-          aria-label={hiddenLabel ? undefined : picture.label}
-          aria-hidden={hiddenLabel || undefined}
-          strokeWidth={1.4}
-        />
-      ) : (
-        <Shapes aria-hidden="true" />
-      )}
-    </div>
-  );
-}
 
 export function EliZone() {
   const library = useLiveQuery(() => eliDb.library.get("main"));
@@ -297,7 +205,11 @@ export function EliZone() {
     );
   };
   return (
-    <section className="eli-zone" aria-label="Eli Zone">
+    <section
+      className="eli-zone"
+      data-palette={library.palette ?? "sage"}
+      aria-label="Eli Zone"
+    >
       {(view === "welcome" || view === "library") && (
         <nav className="eli-view-tabs" aria-label="Eli Zone sections">
           <button
@@ -321,6 +233,35 @@ export function EliZone() {
           </button>
         </nav>
       )}
+      {(view === "welcome" || view === "library") && (
+        <fieldset className="eli-palette-picker">
+          <legend>Card colours</legend>
+          {eliPalettes.map((palette) => (
+            <button
+              key={palette.id}
+              type="button"
+              aria-pressed={(library.palette ?? "sage") === palette.id}
+              onClick={() =>
+                save(() =>
+                  updateEli((l) => {
+                    l.palette = palette.id;
+                  }),
+                )
+              }
+            >
+              <span
+                className="eli-palette-swatch"
+                style={{ background: palette.color }}
+                aria-hidden="true"
+              />
+              {palette.label}
+              {(library.palette ?? "sage") === palette.id && (
+                <Check size={14} aria-hidden="true" />
+              )}
+            </button>
+          ))}
+        </fieldset>
+      )}
       {notice && (
         <div className="eli-notice" role="status">
           {notice}
@@ -330,25 +271,22 @@ export function EliZone() {
         <>
           <div className="eli-welcome panel">
             <div className="eli-welcome-art" aria-hidden="true">
-              <div>
-                <Cat />
-                <span>Cat</span>
-              </div>
-              <div>
-                <Apple />
-                <span>Apple</span>
-              </div>
-              <div>
-                <Star />
-                <span>Star</span>
-              </div>
+              {["cat", "apple", "star"].map((id) => (
+                <div key={id}>
+                  <PictureArt
+                    picture={starterPictures.find((p) => p.id === id)!}
+                    hiddenLabel
+                  />
+                  <span>{starterPictures.find((p) => p.id === id)!.label}</span>
+                </div>
+              ))}
             </div>
             <div>
               <span className="eyebrow">ELI’S LITTLE WORLD</span>
               <h2>Look. Point. Discover.</h2>
               <p>
-                Familiar pictures, little discoveries. Take your time and play
-                together.
+                Clear, lifelike pictures and simple shapes. A calm little space
+                to take your time and discover together.
               </p>
               <span className="eli-soft-badge">
                 <Heart size={14} /> No timer. No pressure.
@@ -593,8 +531,9 @@ export function EliZone() {
             <div>
               <h2>His picture dictionary</h2>
               <p>
-                Keep familiar pictures in play. Untick a picture to leave it out
-                of both games.
+                Montessori-inspired pictures: one clear subject, natural colours
+                and an uncluttered background. Untick a picture to leave it out
+                of both games. Your personal pictures are unchanged.
               </p>
             </div>
             <div className="eli-settings-grid">

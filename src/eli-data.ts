@@ -1,4 +1,11 @@
 import { pick, shuffle } from "./random";
+export const eliPalettes = [
+  { id: "sage", label: "Sage", color: "#b4c6b3" },
+  { id: "sand", label: "Sand", color: "#d8bf96" },
+  { id: "rose", label: "Rose", color: "#d7acaf" },
+  { id: "sky", label: "Sky", color: "#a8c0d4" },
+] as const;
+export type EliPalette = (typeof eliPalettes)[number]["id"];
 
 export const pictureCategories = [
   "Animals",
@@ -15,6 +22,7 @@ export type Picture = {
   category: PictureCategory;
   color: string;
   image?: string;
+  asset?: string;
 };
 export type EliLibrary = {
   key: "main";
@@ -22,6 +30,7 @@ export type EliLibrary = {
   hidden: string[];
   choices: 2 | 3 | 4;
   showWords: boolean;
+  palette?: EliPalette;
 };
 export const starterPictures: Picture[] = [
   { id: "cat", label: "Cat", category: "Animals", color: "#d99847" },
@@ -42,19 +51,22 @@ export const starterPictures: Picture[] = [
   { id: "bike", label: "Bicycle", category: "Things", color: "#609881" },
   { id: "bed", label: "Bed", category: "Things", color: "#9f87c9" },
   { id: "cup", label: "Cup", category: "Things", color: "#bd78a4" },
-  { id: "circle", label: "Circle", category: "Shapes", color: "#d47577" },
-  { id: "square", label: "Square", category: "Shapes", color: "#6f97cd" },
-  { id: "triangle", label: "Triangle", category: "Shapes", color: "#c9a13f" },
-  { id: "star", label: "Star", category: "Shapes", color: "#bd9734" },
-  { id: "heart", label: "Heart", category: "Shapes", color: "#d36e91" },
-  { id: "diamond", label: "Diamond", category: "Shapes", color: "#9879bf" },
+  { id: "circle", label: "Circle", category: "Shapes", color: "#bd6e5b" },
+  { id: "square", label: "Square", category: "Shapes", color: "#6788a5" },
+  { id: "triangle", label: "Triangle", category: "Shapes", color: "#bb923a" },
+  { id: "star", label: "Star", category: "Shapes", color: "#b79036" },
+  { id: "heart", label: "Heart", category: "Shapes", color: "#b76f83" },
+  { id: "diamond", label: "Diamond", category: "Shapes", color: "#78875b" },
   { id: "sun", label: "Sun", category: "Nature", color: "#c49c2e" },
   { id: "moon", label: "Moon", category: "Nature", color: "#9c85be" },
   { id: "cloud", label: "Cloud", category: "Nature", color: "#699abc" },
   { id: "tree", label: "Tree", category: "Nature", color: "#559967" },
   { id: "flower", label: "Flower", category: "Nature", color: "#c878a2" },
   { id: "snowflake", label: "Snowflake", category: "Nature", color: "#689dbf" },
-];
+].map((p) => ({
+  ...p,
+  ...(p.category !== "Shapes" ? { asset: `/eli-art/${p.id}.webp` } : {}),
+})) as Picture[];
 export function newEliLibrary(): EliLibrary {
   return {
     key: "main",
@@ -62,6 +74,7 @@ export function newEliLibrary(): EliLibrary {
     hidden: [],
     choices: 2,
     showWords: false,
+    palette: "sage",
   };
 }
 export function allPictures(library: EliLibrary) {
@@ -108,7 +121,8 @@ export function validateEliBackup(value: unknown): EliLibrary {
     !Array.isArray(l.hidden) ||
     l.hidden.length > 130 ||
     ![2, 3, 4].includes(l.choices) ||
-    typeof l.showWords !== "boolean"
+    typeof l.showWords !== "boolean" ||
+    (l.palette !== undefined && !eliPalettes.some((p) => p.id === l.palette))
   )
     throw new Error("This is not a valid Eli Zone backup.");
   const safePictures = l.pictures.map((p) => {
@@ -146,5 +160,6 @@ export function validateEliBackup(value: unknown): EliLibrary {
     hidden: [...l.hidden],
     choices: l.choices,
     showWords: l.showWords,
+    palette: l.palette ?? "sage",
   };
 }

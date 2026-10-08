@@ -1,0 +1,103 @@
+{
+  "mode": "Built-in ImageGen",
+  "basePrompt": "Use case: scientific-educational. Asset type: one square picture for a toddler recognition dictionary in an offline app. Create a Montessori-inspired realistic painted illustration: the real subject's natural proportions, soft gouache shading, substantial clear silhouette, restrained natural colours, crisp readable edges. One isolated subject only, large and centred, full subject visible, filling about 75% of square. Flat warm-white background #fffdfa, no scenery, no frame, no text, no letters, no watermark, no facial expressions drawn onto objects, no cute anthropomorphic features. Legible as a 120px thumbnail. ",
+  "subjects": [
+    {
+      "id": "cat",
+      "subject": "One full-body domestic ginger cat sitting upright, four paws, long visible curled tail, triangular ears, whiskers and recognisable feline anatomy."
+    },
+    {
+      "id": "dog",
+      "subject": "One full-body golden-brown dog standing side-on, four legs, floppy ears, long snout and a visible tail. Clearly a dog, not a fox or bear."
+    },
+    {
+      "id": "bird",
+      "subject": "One small robin bird standing side-on with a round red-orange breast, brown wings and tail, beak, two legs. No branch or nest."
+    },
+    {
+      "id": "fish",
+      "subject": "One orange goldfish side view with one visible eye, distinct fins and fan tail. No water, tank, bubbles or other fish."
+    },
+    {
+      "id": "rabbit",
+      "subject": "One natural light-brown rabbit sitting side-on, long upright ears, hind legs, small cotton tail."
+    },
+    {
+      "id": "turtle",
+      "subject": "One whole green land turtle side view, domed patterned shell, clear head, four short legs and small tail. Not a tortoise symbol or outline."
+    },
+    {
+      "id": "apple",
+      "subject": "One whole ripe red apple, a short brown stalk and one green leaf. No slice or other fruit."
+    },
+    {
+      "id": "banana",
+      "subject": "One single ripe yellow curved banana, unpeeled, with brown tips. No bunch, bowl or other fruit."
+    },
+    {
+      "id": "cherry",
+      "subject": "Exactly two ripe red cherries joined by green stems and one leaf. This picture's word is Cherries."
+    },
+    {
+      "id": "carrot",
+      "subject": "One whole orange carrot with a fresh leafy green top, tapered root, slight natural grooves. No plate or other vegetables."
+    },
+    {
+      "id": "cookie",
+      "subject": "One round golden-brown chocolate-chip biscuit, intact, viewed slightly from above, clearly visible dark chocolate chips. No packet, plate or text."
+    },
+    {
+      "id": "pizza",
+      "subject": "One unmistakable triangular slice of pizza, with raised golden crust on the back edge, melted yellow cheese, red tomato sauce and a few round pepperoni toppings. No plate, hand or other food."
+    },
+    {
+      "id": "house",
+      "subject": "One small freestanding cream house in a simple three-quarter view, red-brown pitched roof, a front door and two windows, chimney. No trees, garden, street, people or surrounding landscape."
+    },
+    {
+      "id": "car",
+      "subject": "One blue family car side view, two clearly visible wheels, bonnet, cabin with windows and boot. No road, driver or lettering."
+    },
+    {
+      "id": "bus",
+      "subject": "One mustard-yellow bus side view, a long rectangular body with many passenger windows, two visible wheels, a door. Clearly longer and taller than a car. No road, people, lettering or signs."
+    },
+    {
+      "id": "bike",
+      "subject": "One sage-green bicycle side view, two equal large wheels, recognisable triangular frame, pedals, handlebars and saddle. Realistic mechanical geometry, no rider or scenery."
+    },
+    {
+      "id": "bed",
+      "subject": "One single wooden bed in a simple three-quarter view, headboard, four legs, white pillow and muted sage duvet. No room, person or extra furniture."
+    },
+    {
+      "id": "cup",
+      "subject": "One simple ceramic terracotta drinking cup with a large curved handle and open top visible, three-quarter view. No saucer, straw, lid, steam, drink container or decoration."
+    },
+    {
+      "id": "sun",
+      "subject": "A single golden-yellow sun shown as a clear filled circular disc with twelve short rays all around it. Natural warm gold, lightly painted surface, no face, no sky, no planets, no glare, not a flower."
+    },
+    {
+      "id": "moon",
+      "subject": "One pale silver-grey crescent moon, visible subtle lunar craters, unmistakeable curved crescent silhouette. No face, stars, clouds or night-sky background."
+    },
+    {
+      "id": "cloud",
+      "subject": "One isolated soft grey-white puffy cumulus cloud with a broad base and rounded lobes, visible shading to distinguish it clearly from the warm-white background. No rain, sky or sun."
+    },
+    {
+      "id": "tree",
+      "subject": "One whole deciduous tree, broad leafy green crown and a clear brown trunk branching into it, entire tree visible from roots to top. No surrounding trees, ground, birds or scenery."
+    },
+    {
+      "id": "flower",
+      "subject": "One single pink daisy-like flower, yellow centre, stem and two green leaves, entire plant visible. No pot, bouquet, vase, butterflies or ground."
+    },
+    {
+      "id": "snowflake",
+      "subject": "One large pale blue six-armed symmetric snowflake, crisp branched arms, classic ice-crystal form, isolated. Strong enough blue to read on warm-white, no falling snow, no landscape, no face."
+    }
+  ],
+  "note": "Six geometric shapes are native SVG. Image conversion only: 512px WebP at quality 86; artwork contents unchanged."
+}
