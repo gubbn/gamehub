@@ -75,6 +75,14 @@ Supabase references: [RLS](https://supabase.com/docs/guides/database/postgres/ro
 
 Phones use a fixed Home / Games / Tools / Scores / More bar, a sticky header, and safe-area spacing for home indicators and camera cutouts. Controls are at least 44px tall and form text is 16px to avoid automatic input zoom. Dialogs become scrollable bottom sheets and trap focus while keeping the background still. Tools have quick-jump shortcuts; scoreboard cards keep all point adjustments available on small screens. Quick Stop defaults to spoken answers on phones, with an optional recording field, while desktop keeps the original typed-answer layout.
 
+## Eli Zone
+
+Open **Eli Zone** from Home, All games, or the navigation menu. Its dictionary starts with 30 bundled SVG pictures in Animals, Food, Things, Shapes and Nature. **Find it** offers five untimed recognition rounds with 2–4 choices and gentle retries. **Name it** shows one picture at a time, with a parent-controlled word reveal. Category filters, optional word labels and picture inclusion make practice adjustable without affecting the family scoreboard.
+
+The Picture library accepts named JPG, PNG or WebP images (up to 8 MB each, 100 personal pictures). Images are re-encoded as JPEG at up to 512px, stripping original photo metadata. Personal pictures can be renamed or left out of games without deleting them. All pictures and preferences are stored in a separate `gamehub-eli-v1` IndexedDB database, survive container rebuilds, and are **not sent to optional Supabase cloud backup**. Use **Export pictures** inside Eli Zone for a separate JSON backup. Import validates the file, previews it, and adds new pictures without replacing existing pictures or settings; duplicate IDs and words are skipped. Keep exported files private because they contain the images.
+
+Spoken prompts use an available English **local device voice** only, when the parent taps Hear the word. No microphone, speech recognition, network voice service or automatic narration is used. If the device has no suitable voice, the app prompts the parent to read aloud. Offline speech availability depends on installed device voices. The starter illustrations are code-native graphics based on the existing Lucide icon system, so they are bundled and cached with the app.
+
 ## Verification
 
 Unit tests cover winner scoring, challenges, deadline enforcement, repeat prevention, pack separation, deck uniqueness, concurrent IndexedDB writes, persistence after database reopen, and backup restore. Browser QA checks player creation, round play, challenges, score persistence, game tools and responsive views. To check offline behaviour manually, stop the preview server and reload the already-cached app.

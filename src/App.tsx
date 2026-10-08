@@ -28,6 +28,7 @@ import {
   Plus,
   RefreshCw,
   Settings,
+  Shapes,
   Shuffle,
   Sparkles,
   Timer,
@@ -59,6 +60,7 @@ import {
 import { games, packs, categoriesFor, type GameId, type PackId } from "./data";
 import { cardLabel, newDeck, pick, randomInt, letters } from "./random";
 import { cloud, backup, listBackups, restore } from "./cloud";
+import { EliZone } from "./EliZone";
 
 type Screen =
   | "home"
@@ -68,6 +70,7 @@ type Screen =
   | "packs"
   | "history"
   | "settings"
+  | "eli"
   | "play";
 type Modal = {
   type: "players" | "setup" | "rules" | "session" | "confirm";
@@ -97,6 +100,7 @@ const nav = [
   { id: "scores", label: "Scoreboard", icon: Trophy },
   { id: "packs", label: "Game packs", icon: Layers },
   { id: "history", label: "Our memories", icon: History },
+  { id: "eli", label: "Eli Zone", icon: Shapes },
 ] as const;
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -112,6 +116,7 @@ function initialScreen(): Screen {
     "packs",
     "history",
     "settings",
+    "eli",
     "play",
   ].includes(name)
     ? (name as Screen)
@@ -350,7 +355,13 @@ export default function App() {
     return () => clearTimeout(t);
   }, [toast]);
   useEffect(() => {
-    if (!menu || !window.matchMedia("(max-width: 760px), (max-width: 980px) and (max-height: 500px)").matches) return;
+    if (
+      !menu ||
+      !window.matchMedia(
+        "(max-width: 760px), (max-width: 980px) and (max-height: 500px)",
+      ).matches
+    )
+      return;
     const previous = document.activeElement as HTMLElement;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -588,6 +599,7 @@ export default function App() {
     packs: "More games. More good times.",
     history: "The good times, remembered.",
     settings: "Make yourself at home.",
+    eli: "Eli Zone",
     play:
       games.find((g) => g.id === round?.game)?.name ?? "Ready when you are.",
   }[screen];
@@ -712,31 +724,35 @@ export default function App() {
           <div className="page-heading">
             <div>
               <div className="eyebrow">
-                {screen === "home"
-                  ? "LESS SCROLLING. MORE LAUGHING."
-                  : screen === "play"
-                    ? "LET’S PLAY"
-                    : screen === "history"
-                      ? "YOUR HOLIDAY STORY"
-                      : "THE GAME NIGHT ESSENTIALS"}
+                {screen === "eli"
+                  ? "A LITTLE WORLD TO EXPLORE"
+                  : screen === "home"
+                    ? "LESS SCROLLING. MORE LAUGHING."
+                    : screen === "play"
+                      ? "LET’S PLAY"
+                      : screen === "history"
+                        ? "YOUR HOLIDAY STORY"
+                        : "THE GAME NIGHT ESSENTIALS"}
               </div>
               <h1>{title}</h1>
               <p>
-                {screen === "home"
-                  ? "Bring your favourite people. We’ll bring the games."
-                  : screen === "games"
-                    ? "Pick a game, gather your people and jump right in."
-                    : screen === "tools"
-                      ? "Letters, numbers, dice and cards. All in your pocket."
-                      : screen === "scores"
-                        ? "Every point counts. Bragging rights included."
-                        : screen === "packs"
-                          ? "Save a pack now. Play it wherever the holiday takes you."
-                          : screen === "history"
-                            ? "Every round and every holiday champion, saved here."
-                            : screen === "settings"
-                              ? "Your games are saved here, with or without Wi-Fi."
-                              : "Pass the phone around, or keep it in the middle of the table."}
+                {screen === "eli"
+                  ? "Simple pictures. Gentle games. Little discoveries together."
+                  : screen === "home"
+                    ? "Bring your favourite people. We’ll bring the games."
+                    : screen === "games"
+                      ? "Pick a game, gather your people and jump right in."
+                      : screen === "tools"
+                        ? "Letters, numbers, dice and cards. All in your pocket."
+                        : screen === "scores"
+                          ? "Every point counts. Bragging rights included."
+                          : screen === "packs"
+                            ? "Save a pack now. Play it wherever the holiday takes you."
+                            : screen === "history"
+                              ? "Every round and every holiday champion, saved here."
+                              : screen === "settings"
+                                ? "Your games are saved here, with or without Wi-Fi."
+                                : "Pass the phone around, or keep it in the middle of the table."}
               </p>
             </div>
             {(screen === "home" || screen === "games") && (
@@ -758,6 +774,25 @@ export default function App() {
               </button>
             )}
           </div>
+          {(screen === "home" || screen === "games") && (
+            <button
+              className="panel eli-home-banner"
+              aria-label="Open Eli Zone"
+              onClick={() => go("eli")}
+            >
+              <span className="eli-home-icon">
+                <Shapes size={30} />
+              </span>
+              <span>
+                <strong>Eli Zone</strong>
+                <small>
+                  A picture dictionary and gentle recognition games.
+                </small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
+          )}
+          {screen === "eli" && <EliZone />}
           {(screen === "home" || screen === "games") && (
             <>
               {screen === "home" && (
@@ -2436,7 +2471,7 @@ export default function App() {
           aria-expanded={menu}
           aria-controls="app-navigation"
           aria-current={
-            ["packs", "history", "settings"].includes(screen)
+            ["packs", "history", "settings", "eli"].includes(screen)
               ? "page"
               : undefined
           }
