@@ -19,6 +19,7 @@ import {
   allPictures,
   bundledPictures,
   eliPacks,
+  eliChoiceCounts,
   practicePictures,
   setEliPack,
   eliPalettes,
@@ -28,6 +29,7 @@ import {
   recognitionQuestion,
   recognitionWord,
   validateEliBackup,
+  type EliChoiceCount,
   type Picture,
   type PictureCategory,
 } from "./eli-data";
@@ -469,11 +471,11 @@ export function EliZone() {
                 </select>
               </label>
               <label>
-                Pictures per choice
+                Tiles to choose from
                 <select
                   value={library.choices}
                   onChange={(e) => {
-                    const choices = Number(e.target.value) as 2 | 3 | 4;
+                    const choices = Number(e.target.value) as EliChoiceCount;
                     save(() =>
                       updateEli((l) => {
                         l.choices = choices;
@@ -481,9 +483,17 @@ export function EliZone() {
                     );
                   }}
                 >
-                  <option value={2}>2 · A gentle start</option>
-                  <option value={3}>3 · A little more choice</option>
-                  <option value={4}>4 · Ready for more</option>
+                  {eliChoiceCounts.map((count) => (
+                    <option key={count} value={count}>
+                      {count === 2
+                        ? "2 · A gentle start"
+                        : count === 3
+                          ? "3 · A little more choice"
+                          : count === 4
+                            ? "4 · Ready for more"
+                            : `${count} tiles`}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -507,6 +517,12 @@ export function EliZone() {
               no wrong-answer penalty. Names and pictures stay separate from the
               family scoreboard.
             </p>
+            {pool.length >= 2 && pool.length < library.choices && (
+              <p className="muted" role="status">
+                This group has only {pool.length} pictures, so Find it will show{" "}
+                {pool.length} tiles.
+              </p>
+            )}
             <button className="text-button" onClick={() => setView("library")}>
               Choose pictures or add your own <ArrowRight size={16} />
             </button>

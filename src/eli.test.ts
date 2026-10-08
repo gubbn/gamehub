@@ -4,6 +4,7 @@ import {
   allPictures,
   bundledPictures,
   eliPacks,
+  eliChoiceCounts,
   packPictures,
   practicePictures,
   setEliPack,
@@ -158,14 +159,51 @@ describe("Eli picture recognition", () => {
     expect(playablePictures(l, "Animals")).toHaveLength(5);
     expect(playablePictures(l, "My pictures")).toHaveLength(0);
   });
-  it("always includes the correct picture exactly once, without repeated choices", () => {
-    for (let i = 0; i < 100; i++) {
-      const q = recognitionQuestion(starterPictures, 4);
-      expect(q.options).toHaveLength(4);
-      expect(q.options.filter((p) => p.id === q.target.id)).toHaveLength(1);
-      expect(new Set(q.options.map((p) => p.id)).size).toBe(4);
-    }
-  });
+  it.each(eliChoiceCounts)(
+    "offers %i tiles with the correct picture exactly once and no repeats",
+    (choices) => {
+      for (let i = 0; i < 100; i++) {
+        const q = recognitionQuestion(starterPictures, choices);
+        expect(q.options).toHaveLength(choices);
+        expect(q.options.filter((p) => p.id === q.target.id)).toHaveLength(1);
+        expect(new Set(q.options.map((p) => p.id)).size).toBe(choices);
+      }
+    },
+  );
+  it.each([2, 5, 9, 10])(
+    "caps ten choices to a pool of %i pictures",
+    (size) => {
+      const pool = starterPictures.slice(0, size);
+      const q = recognitionQuestion(pool, 10, pool[0].id);
+      expect(q.options).toHaveLength(size);
+      expect(q.target.id).not.toBe(pool[0].id);
+      expect(new Set(q.options.map((p) => p.id)).size).toBe(size);
+    },
+  );
+  it.each(eliChoiceCounts)(
+    "round-trips backups with %i tiles, including old settings",
+    (choices) => {
+      const exported = backup();
+      exported.library.choices = choices;
+      expect(
+        validateEliBackup(JSON.parse(JSON.stringify(exported))).choices,
+      ).toBe(choices);
+    },
+  );
+  it.each([0, 1, 11, 20, 2.5, NaN, Infinity, "10", null, undefined])(
+    "rejects invalid tile count %s in questions and backups",
+    (choices) => {
+      expect(() =>
+        recognitionQuestion(starterPictures, choices as number),
+      ).toThrow(/between 2 and 10/);
+      expect(() =>
+        validateEliBackup({
+          ...backup(),
+          library: { ...backup().library, choices },
+        }),
+      ).toThrow(/valid Eli Zone/);
+    },
+  );
   it("doesn't repeat the previous target and limits choices to the available pool", () => {
     const pool = starterPictures.slice(0, 2);
     const q = recognitionQuestion(pool, 4, pool[0].id);
@@ -224,7 +262,7 @@ describe("Eli Zone offline storage", () => {
     await updateEli((l) => {
       l.pictures.push(photo);
       l.hidden.push("dog");
-      l.choices = 4;
+      l.choices = 10;
       l.showWords = true;
       l.palette = "rose";
       setEliPack(l, "letters", true);
@@ -234,7 +272,7 @@ describe("Eli Zone offline storage", () => {
     const saved = (await eliDb.library.get("main"))!;
     expect(saved.pictures).toEqual([photo]);
     expect(saved.hidden).toEqual(["dog"]);
-    expect(saved.choices).toBe(4);
+    expect(saved.choices).toBe(10);
     expect(saved.showWords).toBe(true);
     expect(saved.palette).toBe("rose");
     expect(saved.enabledPacks).toEqual(["letters"]);

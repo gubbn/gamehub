@@ -8,6 +8,8 @@ export const eliPalettes = [
   { id: "sky", label: "Sky", color: "#a8c0d4" },
 ] as const;
 export type EliPalette = (typeof eliPalettes)[number]["id"];
+export const eliChoiceCounts = [2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+export type EliChoiceCount = (typeof eliChoiceCounts)[number];
 
 export const pictureCategories = [
   "Animals",
@@ -35,7 +37,7 @@ export type EliLibrary = {
   key: "main";
   pictures: Picture[];
   hidden: string[];
-  choices: 2 | 3 | 4;
+  choices: EliChoiceCount;
   showWords: boolean;
   palette?: EliPalette;
   enabledPacks?: EliPackId[];
@@ -156,6 +158,8 @@ export function recognitionQuestion(
   choices: number,
   previous?: string,
 ) {
+  if (!eliChoiceCounts.includes(choices as EliChoiceCount))
+    throw new Error("Choose between 2 and 10 tiles for Find it.");
   if (pool.length < 2)
     throw new Error("Choose at least two pictures for Find it.");
   const target = pick(pool.filter((p) => p.id !== previous));
@@ -181,7 +185,7 @@ export function validateEliBackup(value: unknown): EliLibrary {
     l.pictures.length > 100 ||
     !Array.isArray(l.hidden) ||
     l.hidden.length > bundledPictures.length + 100 ||
-    ![2, 3, 4].includes(l.choices) ||
+    !eliChoiceCounts.includes(l.choices) ||
     typeof l.showWords !== "boolean" ||
     (l.palette !== undefined && !eliPalettes.some((p) => p.id === l.palette)) ||
     (l.enabledPacks !== undefined &&
