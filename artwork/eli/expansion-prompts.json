@@ -1,0 +1,387 @@
+{
+  "mode": "Built-in ImageGen",
+  "basePrompt": "Use case: scientific-educational. Asset type: one square picture for a toddler recognition dictionary in an offline app. Create a Montessori-inspired realistic painted illustration: the real subject's natural proportions, soft gouache shading, substantial clear silhouette, restrained natural colours, crisp readable edges. One isolated subject only, large and centred, full subject visible, filling about 75% of square. Flat warm-white background #fffdfa, no scenery, no frame, no text, no letters, no watermark, no facial expressions drawn onto objects, no cute anthropomorphic features. Legible as a 120px thumbnail. ",
+  "subjects": [
+    {
+      "id": "cow",
+      "subject": "One standing black-and-white dairy cow, four legs, hooves and udders, full body side view.",
+      "category": "Animals"
+    },
+    {
+      "id": "sheep",
+      "subject": "One standing woolly white sheep with four legs and a sheep's face, not a goat.",
+      "category": "Animals"
+    },
+    {
+      "id": "horse",
+      "subject": "One standing chestnut horse with mane, four legs, hooves and long tail, full body side view.",
+      "category": "Animals"
+    },
+    {
+      "id": "pig",
+      "subject": "One pink farm pig with a round snout, four legs and curly tail, full body side view.",
+      "category": "Animals"
+    },
+    {
+      "id": "goat",
+      "subject": "One standing brown-and-white goat with short horns and small beard, four legs.",
+      "category": "Animals"
+    },
+    {
+      "id": "chicken",
+      "subject": "One brown hen standing, red comb, beak, two legs, wing and feathered tail.",
+      "category": "Animals"
+    },
+    {
+      "id": "duck",
+      "subject": "One standing mallard duck, green head, brown chest, yellow bill and two orange webbed feet.",
+      "category": "Animals"
+    },
+    {
+      "id": "goose",
+      "subject": "One white domestic goose, long neck, orange bill and two orange webbed feet.",
+      "category": "Animals"
+    },
+    {
+      "id": "owl",
+      "subject": "One brown barn owl perched upright with heart-shaped facial disc, large eyes and folded wings. No branch.",
+      "category": "Animals"
+    },
+    {
+      "id": "butterfly",
+      "subject": "One butterfly with four orange-and-black wings spread symmetrically, six legs, two antennae.",
+      "category": "Animals"
+    },
+    {
+      "id": "bee",
+      "subject": "One honeybee, black-and-golden striped abdomen, six legs, two antennae and translucent wings.",
+      "category": "Animals"
+    },
+    {
+      "id": "ladybird",
+      "subject": "One red ladybird beetle with black spots, black head and six legs.",
+      "category": "Animals"
+    },
+    {
+      "id": "elephant",
+      "subject": "One standing grey elephant, large ears, long trunk, four legs, full body side view.",
+      "category": "Animals"
+    },
+    {
+      "id": "lion",
+      "subject": "One standing male lion with golden coat and large brown mane, four legs and tufted tail.",
+      "category": "Animals"
+    },
+    {
+      "id": "tiger",
+      "subject": "One standing orange tiger with black stripes, four legs and long tail.",
+      "category": "Animals"
+    },
+    {
+      "id": "giraffe",
+      "subject": "One standing giraffe with very long neck, spotted golden coat, four legs and small horns.",
+      "category": "Animals"
+    },
+    {
+      "id": "zebra",
+      "subject": "One standing zebra with clear black and white stripes, four legs and mane.",
+      "category": "Animals"
+    },
+    {
+      "id": "monkey",
+      "subject": "One brown monkey sitting upright, long visible curved tail, hands, feet and recognisable monkey face. No props.",
+      "category": "Animals"
+    },
+    {
+      "id": "orange",
+      "subject": "One whole round orange fruit with textured orange peel and a small green leaf, no cut fruit.",
+      "category": "Food"
+    },
+    {
+      "id": "pear",
+      "subject": "One whole green pear with narrow top, round base and short stem.",
+      "category": "Food"
+    },
+    {
+      "id": "strawberry",
+      "subject": "One red strawberry with visible seeds and green leafy cap.",
+      "category": "Food"
+    },
+    {
+      "id": "grapes",
+      "subject": "One small bunch of purple grapes with a single green stem.",
+      "category": "Food"
+    },
+    {
+      "id": "lemon",
+      "subject": "One yellow lemon with textured peel and pointed ends.",
+      "category": "Food"
+    },
+    {
+      "id": "peach",
+      "subject": "One whole pink-orange peach with a visible crease and small green leaf.",
+      "category": "Food"
+    },
+    {
+      "id": "pineapple",
+      "subject": "One whole pineapple with diamond-pattern golden skin and spiky green crown.",
+      "category": "Food"
+    },
+    {
+      "id": "watermelon",
+      "subject": "One triangular watermelon slice, green rind, red flesh and a few black seeds.",
+      "category": "Food"
+    },
+    {
+      "id": "tomato",
+      "subject": "One round ripe red tomato with a green star-shaped calyx.",
+      "category": "Food"
+    },
+    {
+      "id": "potato",
+      "subject": "One whole brown potato with small eyes and natural skin texture.",
+      "category": "Food"
+    },
+    {
+      "id": "peas",
+      "subject": "One open green pea pod with five round green peas inside.",
+      "category": "Food"
+    },
+    {
+      "id": "broccoli",
+      "subject": "One head of green broccoli with branching stalk and dense florets.",
+      "category": "Food"
+    },
+    {
+      "id": "bread",
+      "subject": "One small sliced bread loaf with two attached end slices, golden crust and pale inside.",
+      "category": "Food"
+    },
+    {
+      "id": "egg",
+      "subject": "One whole white hen's egg, simple oval, gentle shading.",
+      "category": "Food"
+    },
+    {
+      "id": "cheese",
+      "subject": "One triangular wedge of yellow cheese with a few round holes.",
+      "category": "Food"
+    },
+    {
+      "id": "milk",
+      "subject": "One clear glass of white milk, no bottle, no text.",
+      "category": "Food"
+    },
+    {
+      "id": "ball",
+      "subject": "One red rubber ball with subtle highlights, perfectly round. No patterns or words.",
+      "category": "Things"
+    },
+    {
+      "id": "teddy",
+      "subject": "One soft brown teddy bear sitting, rounded ears, two arms and two legs, clearly a toy.",
+      "category": "Things"
+    },
+    {
+      "id": "doll",
+      "subject": "One simple cloth baby doll wearing a plain dress, arms and legs visible, clearly a toy.",
+      "category": "Things"
+    },
+    {
+      "id": "book",
+      "subject": "One open children's book with blank cream pages and plain blue cover. No text.",
+      "category": "Things"
+    },
+    {
+      "id": "pencil",
+      "subject": "One yellow wooden pencil with graphite point and pink eraser, diagonally placed.",
+      "category": "Things"
+    },
+    {
+      "id": "crayon",
+      "subject": "One thick red wax crayon, blunt pointed tip, plain paper wrap. No text.",
+      "category": "Things"
+    },
+    {
+      "id": "scissors",
+      "subject": "One pair of closed child-safe scissors, rounded metal blades and two green handle loops.",
+      "category": "Things"
+    },
+    {
+      "id": "spoon",
+      "subject": "One stainless steel spoon with oval bowl and long handle, diagonally placed.",
+      "category": "Things"
+    },
+    {
+      "id": "fork",
+      "subject": "One stainless steel dining fork with four tines and long handle, diagonally placed.",
+      "category": "Things"
+    },
+    {
+      "id": "plate",
+      "subject": "One plain cream ceramic round dining plate, top view, no food.",
+      "category": "Things"
+    },
+    {
+      "id": "bowl",
+      "subject": "One empty pale blue ceramic bowl, angled view showing hollow inside.",
+      "category": "Things"
+    },
+    {
+      "id": "bottle",
+      "subject": "One clear reusable water bottle with blue screw cap and water inside, no text.",
+      "category": "Things"
+    },
+    {
+      "id": "toothbrush",
+      "subject": "One manual toothbrush with blue handle and visible white bristles.",
+      "category": "Things"
+    },
+    {
+      "id": "comb",
+      "subject": "One brown hair comb with one row of clearly visible evenly spaced teeth.",
+      "category": "Things"
+    },
+    {
+      "id": "soap",
+      "subject": "One plain pale cream rectangular bar of soap with rounded edges. No packaging or text.",
+      "category": "Things"
+    },
+    {
+      "id": "towel",
+      "subject": "One folded terracotta cotton bath towel, clear soft terry loops, simple stack.",
+      "category": "Things"
+    },
+    {
+      "id": "bath",
+      "subject": "One white freestanding bathtub with four feet and curved rim, no bathroom scenery.",
+      "category": "Things"
+    },
+    {
+      "id": "toilet",
+      "subject": "One white ceramic toilet, tank at back, open seat showing bowl, no room scenery.",
+      "category": "Things"
+    },
+    {
+      "id": "chair",
+      "subject": "One simple wooden chair with backrest, seat and four legs, angled view.",
+      "category": "Things"
+    },
+    {
+      "id": "table",
+      "subject": "One simple rectangular wooden table with four legs, no objects on top.",
+      "category": "Things"
+    },
+    {
+      "id": "door",
+      "subject": "One closed wooden door in a simple door frame, visible brass handle. No wall or room.",
+      "category": "Things"
+    },
+    {
+      "id": "window",
+      "subject": "One simple wooden-framed four-pane window with clear pale-blue glass. No building.",
+      "category": "Things"
+    },
+    {
+      "id": "clock",
+      "subject": "One round analogue wall clock with two hands and twelve simple tick marks. No numbers or letters.",
+      "category": "Things"
+    },
+    {
+      "id": "key",
+      "subject": "One large brass door key with ring-shaped head and visibly toothed end.",
+      "category": "Things"
+    },
+    {
+      "id": "shoe",
+      "subject": "One child's brown lace-up shoe, side view, whole shoe and sole visible.",
+      "category": "Things"
+    },
+    {
+      "id": "sock",
+      "subject": "One soft striped knitted ankle sock, clear heel and toe, lying flat.",
+      "category": "Things"
+    },
+    {
+      "id": "hat",
+      "subject": "One simple woven straw sun hat, round brim and crown.",
+      "category": "Things"
+    },
+    {
+      "id": "coat",
+      "subject": "One blue child's coat with sleeves and buttons, front view, no hanger or body.",
+      "category": "Things"
+    },
+    {
+      "id": "umbrella",
+      "subject": "One open red umbrella with curved handle, entire canopy and handle visible.",
+      "category": "Things"
+    },
+    {
+      "id": "bag",
+      "subject": "One green child's backpack with straps and one front pocket, plain unbranded.",
+      "category": "Things"
+    },
+    {
+      "id": "train",
+      "subject": "One red railway locomotive with wheels on a very short integrated rail section, no carriages, scenery or text.",
+      "category": "Things"
+    },
+    {
+      "id": "boat",
+      "subject": "One small wooden sailing boat with triangular cream sail, full hull visible, no water or scenery.",
+      "category": "Things"
+    },
+    {
+      "id": "leaf",
+      "subject": "One green oak leaf with visible stem, veins and lobes.",
+      "category": "Nature"
+    },
+    {
+      "id": "grass",
+      "subject": "One small dense tuft of green grass with individual upright blades and tiny base, isolated.",
+      "category": "Nature"
+    },
+    {
+      "id": "rock",
+      "subject": "One rounded grey rock, clearly solid stone with subtle natural mottled texture.",
+      "category": "Nature"
+    },
+    {
+      "id": "shell",
+      "subject": "One cream and peach scallop seashell with radiating ridges, no beach scenery.",
+      "category": "Nature"
+    },
+    {
+      "id": "feather",
+      "subject": "One brown bird feather with central quill and fine barbs.",
+      "category": "Nature"
+    },
+    {
+      "id": "rainbow",
+      "subject": "One clear semicircular rainbow with bands in red, orange, yellow, green, blue and purple, no clouds or scenery.",
+      "category": "Nature"
+    },
+    {
+      "id": "rain",
+      "subject": "One soft grey cloud with several distinct blue rain drops falling beneath, no scenery.",
+      "category": "Nature"
+    },
+    {
+      "id": "puddle",
+      "subject": "One shallow blue-grey puddle on a tiny patch of neutral ground, oval surface with clear concentric water ripples, no objects.",
+      "category": "Nature"
+    },
+    {
+      "id": "mountain",
+      "subject": "One tall grey rocky mountain with snowy peak, isolated complete triangular silhouette, no landscape.",
+      "category": "Nature"
+    },
+    {
+      "id": "mushroom",
+      "subject": "One natural brown woodland mushroom with wide cap, pale stem and visible gills, no scenery.",
+      "category": "Nature"
+    }
+  ],
+  "processing": "512px WebP, quality 86; only resize and encode. Letter, number, colour and shape cards are native SVG, not generated images."
+}

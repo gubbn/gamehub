@@ -17,11 +17,16 @@ import {
 } from "lucide-react";
 import {
   allPictures,
+  bundledPictures,
+  eliPacks,
+  practicePictures,
+  setEliPack,
   eliPalettes,
   starterPictures,
   pictureCategories,
   playablePictures,
   recognitionQuestion,
+  recognitionWord,
   validateEliBackup,
   type Picture,
   type PictureCategory,
@@ -33,10 +38,11 @@ import "./eli.css";
 
 export function EliZone() {
   const library = useLiveQuery(() => eliDb.library.get("main"));
-  const [view, setView] = useState<"welcome" | "library" | "find" | "name">(
-    "welcome",
-  );
+  const [view, setView] = useState<
+    "welcome" | "library" | "packs" | "find" | "name"
+  >("welcome");
   const [category, setCategory] = useState("All pictures");
+  const [pack, setPack] = useState("all");
   const [search, setSearch] = useState("");
   const [question, setQuestion] = useState<ReturnType<
     typeof recognitionQuestion
@@ -137,13 +143,35 @@ export function EliZone() {
     );
   if (!library) return <p role="status">Opening Eli’s picture library…</p>;
   const pictures = allPictures(library);
-  const pool = playablePictures(library, category);
-  const visiblePictures = pictures.filter(
+  const pool = playablePictures(library, category, pack);
+  const visiblePictures = practicePictures(library, category, pack).filter(
     (p) =>
       (category === "All pictures" || p.category === category) &&
       p.label.toLowerCase().includes(search.trim().toLowerCase()),
   );
   const correct = !!question && selected === question.target.id;
+  const packPicker = (
+    <label>
+      Practice pack
+      <select
+        value={pack}
+        onChange={(e) => {
+          setPack(e.target.value);
+          setCategory("All pictures");
+        }}
+      >
+        <option value="all">All enabled pictures</option>
+        <option value="starter">Starter library · 30 pictures</option>
+        {eliPacks
+          .filter((p) => library.enabledPacks?.includes(p.id))
+          .map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label} · {p.ids.length} pictures
+            </option>
+          ))}
+      </select>
+    </label>
+  );
   const start = (mode: "find" | "name") => {
     setNotice("");
     if (mode === "find" && pool.length < 2) {
@@ -210,7 +238,7 @@ export function EliZone() {
       data-palette={library.palette ?? "sage"}
       aria-label="Eli Zone"
     >
-      {(view === "welcome" || view === "library") && (
+      {(view === "welcome" || view === "library" || view === "packs") && (
         <nav className="eli-view-tabs" aria-label="Eli Zone sections">
           <button
             aria-current={view === "welcome" ? "page" : undefined}
@@ -231,9 +259,18 @@ export function EliZone() {
             <BookOpen size={18} /> Picture library{" "}
             <span>{pictures.length}</span>
           </button>
+          <button
+            aria-current={view === "packs" ? "page" : undefined}
+            onClick={() => {
+              setView("packs");
+              setNotice("");
+            }}
+          >
+            <Plus size={18} /> Expansion packs
+          </button>
         </nav>
       )}
-      {(view === "welcome" || view === "library") && (
+      {(view === "welcome" || view === "library" || view === "packs") && (
         <fieldset className="eli-palette-picker">
           <legend>Card colours</legend>
           {eliPalettes.map((palette) => (
@@ -266,6 +303,92 @@ export function EliZone() {
         <div className="eli-notice" role="status">
           {notice}
         </div>
+      )}
+      {view === "packs" && (
+        <section className="eli-expansions" aria-label="Eli expansion packs">
+          <div className="panel eli-pack-intro">
+            <span className="eyebrow">GROW AT HIS PACE</span>
+            <h2>A little more to discover</h2>
+            <p>
+              Choose a pack when he is ready. Add it to play, practise it on its
+              own, or leave it out again. The starter library stays available,
+              and overlapping pictures appear only once.
+            </p>
+            <p className="muted">
+              All six packs are bundled for offline use. Personal pictures and
+              individual exclusions are kept. Colour swatches use their true
+              colours, regardless of your card palette.
+            </p>
+          </div>
+          <div className="eli-pack-grid">
+            {eliPacks.map((p) => {
+              const enabled = library.enabledPacks?.includes(p.id) ?? false;
+              return (
+                <article
+                  className={`panel eli-pack-card ${enabled ? "enabled" : ""}`}
+                  key={p.id}
+                >
+                  <div className="eli-pack-preview" aria-hidden="true">
+                    {p.previews.map((id) => (
+                      <PictureArt
+                        key={id}
+                        picture={bundledPictures.find((x) => x.id === id)!}
+                        hiddenLabel
+                      />
+                    ))}
+                  </div>
+                  <div className="eli-pack-heading">
+                    <h3>{p.label}</h3>
+                    <span>{p.ids.length} cards</span>
+                  </div>
+                  <p>{p.description}</p>
+                  <button
+                    className={enabled ? "secondary" : "primary"}
+                    aria-pressed={enabled}
+                    aria-label={`Enable ${p.label} pack`}
+                    onClick={() =>
+                      save(() =>
+                        updateEli((l) => setEliPack(l, p.id, !enabled)),
+                      ).then((ok) => {
+                        if (ok && !enabled)
+                          setNotice(`${p.label} added to play.`);
+                        if (ok && enabled) {
+                          if (pack === p.id) setPack("all");
+                          setNotice(
+                            `${p.label} left out. Individual picture choices are kept.`,
+                          );
+                        }
+                      })
+                    }
+                  >
+                    {enabled ? <Check size={18} /> : <Plus size={18} />}
+                    {enabled ? "In play · tap to leave out" : "Add to play"}
+                  </button>
+                  <button
+                    className="text-button"
+                    onClick={async () => {
+                      if (
+                        !enabled &&
+                        !(await save(() =>
+                          updateEli((l) => setEliPack(l, p.id, true)),
+                        ))
+                      )
+                        return;
+                      setPack(p.id);
+                      setCategory("All pictures");
+                      setView("welcome");
+                      setNotice(
+                        `Practising ${p.label}. Choose Find it or Name it.`,
+                      );
+                    }}
+                  >
+                    Practise this pack <ArrowRight size={16} />
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </section>
       )}
       {view === "welcome" && (
         <>
@@ -332,6 +455,7 @@ export function EliZone() {
           <section className="panel eli-play-settings">
             <h2>Make it just right</h2>
             <div className="eli-settings-grid">
+              {packPicker}
               <label>
                 Pictures to practise
                 <select
@@ -386,6 +510,9 @@ export function EliZone() {
             <button className="text-button" onClick={() => setView("library")}>
               Choose pictures or add your own <ArrowRight size={16} />
             </button>
+            <button className="text-button" onClick={() => setView("packs")}>
+              Explore six expansion packs <Plus size={16} />
+            </button>
           </section>
         </>
       )}
@@ -424,13 +551,12 @@ export function EliZone() {
                   <span>{round} of 5</span>
                 </div>
                 <h2 ref={gameHeadingRef} tabIndex={-1}>
-                  Find the{" "}
-                  <strong>{question.target.label.toLowerCase()}</strong>
+                  Find the <strong>{recognitionWord(question.target)}</strong>
                 </h2>
                 <button
                   className="secondary eli-say"
                   onClick={() =>
-                    say(`Find the ${question.target.label.toLowerCase()}`)
+                    say(`Find the ${recognitionWord(question.target)}`)
                   }
                 >
                   <Volume2 size={18} /> Hear the word
@@ -461,7 +587,7 @@ export function EliZone() {
                     <>
                       <strong>
                         That’s it! You found the{" "}
-                        {question.target.label.toLowerCase()}.
+                        {recognitionWord(question.target)}.
                       </strong>
                       <button
                         ref={feedbackRef}
@@ -475,7 +601,7 @@ export function EliZone() {
                   ) : (
                     <p>
                       {selected
-                        ? `Have another look. Where’s the ${question.target.label.toLowerCase()}?`
+                        ? `Have another look. Where’s the ${recognitionWord(question.target)}?`
                         : "Look at the pictures. Tap the one you see."}
                     </p>
                   )}
@@ -537,6 +663,7 @@ export function EliZone() {
               </p>
             </div>
             <div className="eli-settings-grid">
+              {packPicker}
               <label>
                 Search pictures
                 <input

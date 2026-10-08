@@ -1,4 +1,6 @@
 import { pick, shuffle } from "./random";
+import { eliPacks, expansionPictures, type EliPackId } from "./eli-packs";
+export { eliPacks, type EliPackId } from "./eli-packs";
 export const eliPalettes = [
   { id: "sage", label: "Sage", color: "#b4c6b3" },
   { id: "sand", label: "Sand", color: "#d8bf96" },
@@ -13,6 +15,9 @@ export const pictureCategories = [
   "Things",
   "Shapes",
   "Nature",
+  "Letters",
+  "Numbers",
+  "Colours",
   "My pictures",
 ] as const;
 export type PictureCategory = (typeof pictureCategories)[number];
@@ -23,6 +28,8 @@ export type Picture = {
   color: string;
   image?: string;
   asset?: string;
+  kind?: "letter" | "number" | "colour";
+  symbol?: string;
 };
 export type EliLibrary = {
   key: "main";
@@ -31,6 +38,7 @@ export type EliLibrary = {
   choices: 2 | 3 | 4;
   showWords: boolean;
   palette?: EliPalette;
+  enabledPacks?: EliPackId[];
 };
 export const starterPictures: Picture[] = [
   { id: "cat", label: "Cat", category: "Animals", color: "#d99847" },
@@ -67,6 +75,23 @@ export const starterPictures: Picture[] = [
   ...p,
   ...(p.category !== "Shapes" ? { asset: `/eli-art/${p.id}.webp` } : {}),
 })) as Picture[];
+export const bundledPictures = [...starterPictures, ...expansionPictures];
+export function packPictures(packId: string): Picture[] {
+  const pack = eliPacks.find((p) => p.id === packId);
+  return pack
+    ? pack.ids.map((id) => bundledPictures.find((p) => p.id === id)!)
+    : [];
+}
+export function setEliPack(
+  library: EliLibrary,
+  packId: EliPackId,
+  enabled: boolean,
+) {
+  const current = library.enabledPacks ?? [];
+  library.enabledPacks = enabled
+    ? [...new Set([...current, packId])]
+    : current.filter((id) => id !== packId);
+}
 export function newEliLibrary(): EliLibrary {
   return {
     key: "main",
@@ -75,19 +100,55 @@ export function newEliLibrary(): EliLibrary {
     choices: 2,
     showWords: false,
     palette: "sage",
+    enabledPacks: [],
   };
 }
 export function allPictures(library: EliLibrary) {
-  return [...starterPictures, ...library.pictures];
+  const ids = new Set([
+    ...starterPictures.map((p) => p.id),
+    ...eliPacks
+      .filter((p) => library.enabledPacks?.includes(p.id))
+      .flatMap((p) => [...p.ids]),
+  ]);
+  // Personal pictures take precedence when an expansion introduces the same word.
+  const personalWords = new Set(
+    library.pictures.map((p) => p.label.toLowerCase()),
+  );
+  return [
+    ...bundledPictures.filter(
+      (p) => ids.has(p.id) && !personalWords.has(p.label.toLowerCase()),
+    ),
+    ...library.pictures,
+  ];
+}
+export function practicePictures(
+  library: EliLibrary,
+  category = "All pictures",
+  pack = "all",
+) {
+  const words =
+    pack === "starter"
+      ? new Set(starterPictures.map((p) => p.label.toLowerCase()))
+      : pack === "all"
+        ? null
+        : new Set(packPictures(pack).map((p) => p.label.toLowerCase()));
+  return allPictures(library).filter(
+    (p) =>
+      (!words || words.has(p.label.toLowerCase())) &&
+      (category === "All pictures" || p.category === category),
+  );
+}
+export function recognitionWord(picture: Picture) {
+  if (picture.kind === "letter") return `letter ${picture.symbol}`;
+  return picture.label.toLowerCase();
 }
 export function playablePictures(
   library: EliLibrary,
   category: string = "All pictures",
+  pack: string = "all",
 ) {
-  return allPictures(library).filter(
-    (p) =>
-      !library.hidden.includes(p.id) &&
-      (category === "All pictures" || p.category === category),
+  return practicePictures(library, category, pack).filter(
+    (p) => !library.hidden.includes(p.id),
   );
 }
 export function recognitionQuestion(
@@ -119,10 +180,15 @@ export function validateEliBackup(value: unknown): EliLibrary {
     !Array.isArray(l.pictures) ||
     l.pictures.length > 100 ||
     !Array.isArray(l.hidden) ||
-    l.hidden.length > 130 ||
+    l.hidden.length > bundledPictures.length + 100 ||
     ![2, 3, 4].includes(l.choices) ||
     typeof l.showWords !== "boolean" ||
-    (l.palette !== undefined && !eliPalettes.some((p) => p.id === l.palette))
+    (l.palette !== undefined && !eliPalettes.some((p) => p.id === l.palette)) ||
+    (l.enabledPacks !== undefined &&
+      (!Array.isArray(l.enabledPacks) ||
+        l.enabledPacks.length > eliPacks.length ||
+        new Set(l.enabledPacks).size !== l.enabledPacks.length ||
+        l.enabledPacks.some((id) => !eliPacks.some((p) => p.id === id))))
   )
     throw new Error("This is not a valid Eli Zone backup.");
   const safePictures = l.pictures.map((p) => {
@@ -147,7 +213,7 @@ export function validateEliBackup(value: unknown): EliLibrary {
       color: "#8b78b4",
     };
   });
-  const ids = new Set([...starterPictures, ...safePictures].map((p) => p.id));
+  const ids = new Set([...bundledPictures, ...safePictures].map((p) => p.id));
   if (
     new Set(safePictures.map((p) => p.id)).size !== safePictures.length ||
     l.hidden.some((id) => typeof id !== "string" || !ids.has(id)) ||
@@ -161,5 +227,6 @@ export function validateEliBackup(value: unknown): EliLibrary {
     choices: l.choices,
     showWords: l.showWords,
     palette: l.palette ?? "sage",
+    enabledPacks: [...(l.enabledPacks ?? [])],
   };
 }

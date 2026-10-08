@@ -2,9 +2,15 @@ import "fake-indexeddb/auto";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   allPictures,
+  bundledPictures,
+  eliPacks,
+  packPictures,
+  practicePictures,
+  setEliPack,
   newEliLibrary,
   playablePictures,
   recognitionQuestion,
+  recognitionWord,
   starterPictures,
   validateEliBackup,
 } from "./eli-data";
@@ -24,6 +30,101 @@ const backup = () => ({
   library: { ...newEliLibrary(), pictures: [photo] },
 });
 describe("Eli picture recognition", () => {
+  it("offers six accurate expansion packs with unique cards and vocabulary", () => {
+    expect(eliPacks.map((p) => p.ids.length)).toEqual([
+      24, 10, 26, 21, 11, 100,
+    ]);
+    expect(bundledPictures).toHaveLength(168);
+    expect(new Set(bundledPictures.map((p) => p.id)).size).toBe(168);
+    expect(
+      new Set(bundledPictures.map((p) => p.label.toLowerCase())).size,
+    ).toBe(168);
+    for (const pack of eliPacks) {
+      expect(new Set(pack.ids).size).toBe(pack.ids.length);
+      expect(packPictures(pack.id).every(Boolean)).toBe(true);
+      expect(pack.previews.every((id) => pack.ids.includes(id as never))).toBe(
+        true,
+      );
+    }
+    expect(packPictures("unknown")).toEqual([]);
+    expect(packPictures("basic-words").every((p) => !!p.asset)).toBe(true);
+    expect(packPictures("numbers").map((p) => p.symbol)).toEqual(
+      Array.from({ length: 21 }, (_, n) => String(n)),
+    );
+  });
+  it("keeps expansions opt-in and deduplicates overlapping enabled packs", () => {
+    const l = newEliLibrary();
+    expect(l.enabledPacks).toEqual([]);
+    expect(allPictures(l)).toHaveLength(30);
+    setEliPack(l, "animals", true);
+    expect(allPictures(l)).toHaveLength(48);
+    setEliPack(l, "basic-words", true);
+    setEliPack(l, "animals", true);
+    expect(allPictures(l)).toHaveLength(106);
+    expect(l.enabledPacks).toEqual(["animals", "basic-words"]);
+    for (const p of eliPacks) setEliPack(l, p.id, true);
+    expect(allPictures(l)).toHaveLength(168);
+  });
+  it("filters practice packs and preserves exclusions when packs are switched", () => {
+    const l = newEliLibrary();
+    setEliPack(l, "animals", true);
+    l.hidden.push("cow");
+    expect(playablePictures(l, "All pictures", "animals")).toHaveLength(23);
+    expect(practicePictures(l, "All pictures", "starter")).toHaveLength(30);
+    expect(playablePictures(l, "Food", "animals")).toHaveLength(0);
+    setEliPack(l, "animals", false);
+    expect(allPictures(l).some((p) => p.id === "cow")).toBe(false);
+    expect(playablePictures(l, "All pictures", "animals")).toHaveLength(6);
+    setEliPack(l, "animals", true);
+    expect(l.hidden).toEqual(["cow"]);
+    expect(
+      playablePictures(l, "All pictures", "animals").some(
+        (p) => p.id === "cow",
+      ),
+    ).toBe(false);
+  });
+  it("preserves personal pictures when a new pack has the same word", () => {
+    const l = newEliLibrary();
+    l.pictures.push({ ...photo, label: "Ball" });
+    setEliPack(l, "basic-words", true);
+    const balls = allPictures(l).filter(
+      (p) => p.label.toLowerCase() === "ball",
+    );
+    expect(balls).toEqual([{ ...photo, label: "Ball" }]);
+    expect(
+      practicePictures(l, "All pictures", "basic-words").filter(
+        (p) => p.label === "Ball",
+      ),
+    ).toEqual(balls);
+    expect(practicePictures(l, "All pictures", "basic-words")).toHaveLength(
+      100,
+    );
+  });
+  it("uses clear letter, number and colour prompts without changing object words", () => {
+    expect(recognitionWord(packPictures("letters")[0])).toBe("letter A");
+    expect(recognitionWord(packPictures("numbers")[0])).toBe("number 0");
+    expect(recognitionWord(packPictures("colours")[0])).toBe("red colour");
+    expect(recognitionWord(starterPictures[0])).toBe("cat");
+  });
+  it("accepts old backups and validates expansion settings and hidden pack cards", () => {
+    const old = backup();
+    delete old.library.enabledPacks;
+    expect(validateEliBackup(old).enabledPacks).toEqual([]);
+    const l = { ...newEliLibrary(), hidden: bundledPictures.map((p) => p.id) };
+    setEliPack(l, "letters", true);
+    expect(
+      validateEliBackup({ format: "gamehub-eli", version: 1, library: l })
+        .enabledPacks,
+    ).toEqual(["letters"]);
+    for (const enabledPacks of [["bad"], ["letters", "letters"], "letters"]) {
+      expect(() =>
+        validateEliBackup({
+          ...old,
+          library: { ...old.library, enabledPacks },
+        }),
+      ).toThrow();
+    }
+  });
   it("supports older backups and validates card colour choices", () => {
     const old = backup();
     delete old.library.palette;
@@ -126,6 +227,7 @@ describe("Eli Zone offline storage", () => {
       l.choices = 4;
       l.showWords = true;
       l.palette = "rose";
+      setEliPack(l, "letters", true);
     });
     eliDb.close();
     await eliDb.open();
@@ -135,6 +237,7 @@ describe("Eli Zone offline storage", () => {
     expect(saved.choices).toBe(4);
     expect(saved.showWords).toBe(true);
     expect(saved.palette).toBe("rose");
+    expect(saved.enabledPacks).toEqual(["letters"]);
     await initializeEli();
     expect((await eliDb.library.get("main"))!.pictures).toEqual([photo]);
   });
