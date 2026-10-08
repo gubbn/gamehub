@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.openai
+.sites-runtime
+.env
+.env.*
+*.log
+*.tgz
+*.tar.gz
+coverage
+README.md
+supabase
+scripts

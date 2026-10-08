@@ -129,6 +129,8 @@ function ModalShell({
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const element = ref.current;
     element?.querySelector<HTMLElement>("input,button,select")?.focus();
     const handler = (e: KeyboardEvent) => {
@@ -153,6 +155,7 @@ function ModalShell({
     document.addEventListener("keydown", handler);
     return () => {
       document.removeEventListener("keydown", handler);
+      document.body.style.overflow = previousOverflow;
       previous?.focus();
     };
   }, [close]);
@@ -252,10 +255,12 @@ export default function App() {
   const [playerName, setPlayerName] = useState(""),
     [avatar, setAvatar] = useState(avatars[0]),
     [answer, setAnswer] = useState(""),
+    [recordAnswers, setRecordAnswers] = useState(false),
     [custom, setCustom] = useState(""),
     [sessionName, setSessionName] = useState("Game night"),
     [resetSession, setResetSession] = useState(true),
     [challenger, setChallenger] = useState("");
+  const navigationRef = useRef<HTMLElement>(null);
   const fileRef = useRef<HTMLInputElement>(null),
     expireRef = useRef(false),
     syncRef = useRef(false);
@@ -344,6 +349,34 @@ export default function App() {
     const t = setTimeout(() => setToast(""), 4500);
     return () => clearTimeout(t);
   }, [toast]);
+  useEffect(() => {
+    if (!menu || !window.matchMedia("(max-width: 760px), (max-width: 980px) and (max-height: 500px)").matches) return;
+    const previous = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const drawer = navigationRef.current;
+    const buttons = Array.from(
+      drawer?.querySelectorAll<HTMLElement>("a,button") ?? [],
+    );
+    buttons[0]?.focus();
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenu(false);
+      if (event.key !== "Tab") return;
+      if (event.shiftKey && document.activeElement === buttons[0]) {
+        event.preventDefault();
+        buttons.at(-1)?.focus();
+      } else if (!event.shiftKey && document.activeElement === buttons.at(-1)) {
+        event.preventDefault();
+        buttons[0]?.focus();
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handler);
+      previous?.focus();
+    };
+  }, [menu]);
   useEffect(() => {
     if (!cloud) return;
     cloud.auth
@@ -560,7 +593,19 @@ export default function App() {
   }[screen];
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${menu ? "open" : ""}`}>
+      <aside
+        id="app-navigation"
+        ref={navigationRef}
+        inert={!!modal}
+        className={`sidebar ${menu ? "open" : ""}`}
+      >
+        <button
+          className="drawer-close icon-button"
+          aria-label="Close navigation"
+          onClick={() => setMenu(false)}
+        >
+          <X />
+        </button>
         <a href="#home" className="brand" onClick={() => go("home")}>
           <span className="brand-icon">
             <Dices size={26} />
@@ -574,6 +619,7 @@ export default function App() {
             <button
               key={item.id}
               className={screen === item.id ? "selected" : ""}
+              aria-current={screen === item.id ? "page" : undefined}
               onClick={() => go(item.id)}
             >
               <item.icon size={20} />
@@ -623,12 +669,14 @@ export default function App() {
           onClick={() => setMenu(false)}
         />
       )}
-      <div className="main-area">
+      <div className="main-area" inert={menu || !!modal}>
         <header className="topbar">
           <button
             className="mobile-menu icon-button"
             onClick={() => setMenu(!menu)}
-            aria-label="Open navigation"
+            aria-label={menu ? "Close navigation" : "Open navigation"}
+            aria-expanded={menu}
+            aria-controls="app-navigation"
           >
             <Menu />
           </button>
@@ -660,7 +708,7 @@ export default function App() {
             </button>
           </div>
         </header>
-        <main id="main" className="main-content">
+        <main id="main" className={`main-content screen-${screen}`}>
           <div className="page-heading">
             <div>
               <div className="eyebrow">
@@ -1122,309 +1170,331 @@ export default function App() {
             </>
           )}
           {screen === "tools" && (
-            <div className="tools-grid">
-              <section className="tool panel">
-                <div className="tool-heading">
-                  <span className="tool-icon lavender">
-                    <span>A</span>
-                  </span>
-                  <div>
-                    <h2>Pick a letter</h2>
-                    <p>A starting point for a hundred games.</p>
-                  </div>
-                </div>
-                <div className="tool-value letter-value">
-                  {state.toolLetter}
-                </div>
-                <label className="toggle">
-                  <input
-                    type="checkbox"
-                    checked={state.settings.easyLetters}
-                    onChange={(e) =>
-                      run(() =>
-                        update((s) => {
-                          s.settings.easyLetters = e.target.checked;
-                        }),
-                      )
-                    }
-                  />
-                  Skip difficult letters (Q, X, Z)
-                </label>
-                <button
-                  className="primary wide"
-                  onClick={() =>
-                    run(() =>
-                      update((s) => {
-                        s.toolLetter = pick(letters(s.settings.easyLetters));
-                      }),
-                    )
-                  }
-                >
-                  <Shuffle size={17} />
-                  Generate letter
-                </button>
-              </section>
-              <section className="tool panel">
-                <div className="tool-heading">
-                  <span className="tool-icon peach">
-                    <Dices />
-                  </span>
-                  <div>
-                    <h2>Roll the dice</h2>
-                    <p>No chasing dice under the sofa.</p>
-                  </div>
-                </div>
-                <div className="dice-tray">
-                  {state.toolDice.map((value, i) => (
-                    <DiceFace key={i} value={value} />
-                  ))}
-                </div>
-                <label className="inline-field">
-                  Number of dice
-                  <select
-                    aria-label="Number of dice"
-                    value={state.toolDice.length}
-                    onChange={(e) => {
-                      const n = Number(e.target.value);
-                      run(() =>
-                        update((s) => {
-                          s.toolDice = Array.from({ length: n }, () => 1);
-                        }),
-                      );
-                    }}
-                  >
-                    <option value={1}>1 die</option>
-                    <option value={2}>2 dice</option>
-                    <option value={3}>3 dice</option>
-                  </select>
-                </label>
-                <button
-                  className="primary wide"
-                  onClick={() =>
-                    run(() =>
-                      update((s) => {
-                        s.toolDice = s.toolDice.map(() => randomInt(1, 6));
-                      }),
-                    )
-                  }
-                >
-                  <Dices size={18} />
-                  Roll dice{" "}
-                  {state.toolDice.length > 1 &&
-                    `· Total ${state.toolDice.reduce((a, b) => a + b, 0)}`}
-                </button>
-              </section>
-              <section className="tool panel">
-                <div className="tool-heading">
-                  <span className="tool-icon mint">♠</span>
-                  <div>
-                    <h2>Draw a card</h2>
-                    <p>A full deck. No repeats until you reshuffle.</p>
-                  </div>
-                </div>
-                <div className="card-tray">
-                  <CardFace card={state.toolCard ?? undefined} />
-                </div>
-                <div className="tool-note">
-                  {state.toolDeck.length} of 52 cards remaining · Aces are low
-                </div>
-                <div className="button-row">
+            <>
+              <nav className="tool-shortcuts" aria-label="Jump to a game tool">
+                {["Letter", "Dice", "Cards", "Number", "Timer"].map((label) => (
                   <button
-                    className="secondary"
+                    key={label}
                     onClick={() =>
-                      run(
-                        () =>
-                          update((s) => {
-                            s.toolDeck = newDeck();
-                            s.toolCard = null;
-                          }),
-                        "Deck reshuffled.",
-                      )
+                      document
+                        .getElementById(`tool-${label.toLowerCase()}`)
+                        ?.scrollIntoView({
+                          block: "start",
+                          behavior: "instant",
+                        })
                     }
                   >
-                    <RefreshCw size={16} />
-                    Shuffle
+                    {label}
                   </button>
-                  <button
-                    className="primary"
-                    disabled={!state.toolDeck.length}
-                    onClick={() =>
-                      run(() =>
-                        update((s) => {
-                          s.toolCard = s.toolDeck.pop() ?? null;
-                        }),
-                      )
-                    }
-                  >
-                    Draw card <ArrowRight size={16} />
-                  </button>
-                </div>
-              </section>
-              <section className="tool panel">
-                <div className="tool-heading">
-                  <span className="tool-icon yellow">#</span>
-                  <div>
-                    <h2>Pick a number</h2>
-                    <p>Leave the choosing up to chance.</p>
+                ))}
+              </nav>
+              <div className="tools-grid">
+                <section id="tool-letter" className="tool panel">
+                  <div className="tool-heading">
+                    <span className="tool-icon lavender">
+                      <span>A</span>
+                    </span>
+                    <div>
+                      <h2>Pick a letter</h2>
+                      <p>A starting point for a hundred games.</p>
+                    </div>
                   </div>
-                </div>
-                <div className="tool-value">{state.toolNumber ?? "?"}</div>
-                <div className="range-fields">
-                  <label>
-                    From
+                  <div className="tool-value letter-value">
+                    {state.toolLetter}
+                  </div>
+                  <label className="toggle">
                     <input
-                      type="number"
-                      aria-label="Minimum number"
-                      value={state.numberMin}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
+                      type="checkbox"
+                      checked={state.settings.easyLetters}
+                      onChange={(e) =>
                         run(() =>
                           update((s) => {
-                            s.numberMin = n;
+                            s.settings.easyLetters = e.target.checked;
                           }),
-                        );
-                      }}
-                    />
-                  </label>
-                  <span>to</span>
-                  <label>
-                    To
-                    <input
-                      type="number"
-                      aria-label="Maximum number"
-                      value={state.numberMax}
-                      onChange={(e) => {
-                        const n = Number(e.target.value);
-                        run(() =>
-                          update((s) => {
-                            s.numberMax = n;
-                          }),
-                        );
-                      }}
-                    />
-                  </label>
-                </div>
-                <button
-                  className="primary wide"
-                  onClick={() =>
-                    run(() =>
-                      update((s) => {
-                        s.toolNumber = randomInt(s.numberMin, s.numberMax);
-                      }),
-                    )
-                  }
-                >
-                  <Shuffle size={17} />
-                  Generate number
-                </button>
-              </section>
-              <section className="tool panel standalone-timer">
-                <div className="tool-heading">
-                  <span className="tool-icon peach">
-                    <Timer />
-                  </span>
-                  <div>
-                    <h2>Beat the clock</h2>
-                    <p>A timer for whatever you’re playing.</p>
-                  </div>
-                </div>
-                <div
-                  className={`tool-value ${toolRemaining === 0 ? "danger" : ""}`}
-                  role="timer"
-                  aria-label={`${toolRemaining} seconds remaining`}
-                >
-                  {String(Math.floor(toolRemaining / 60)).padStart(2, "0")}:
-                  {String(toolRemaining % 60).padStart(2, "0")}
-                </div>
-                {toolRemaining === 0 && (
-                  <p className="timer-done" role="status">
-                    Time’s up!
-                  </p>
-                )}
-                <div className="timer-presets">
-                  {[30, 60, 120, 300].map((seconds) => (
-                    <button
-                      key={seconds}
-                      className={
-                        state.toolTimer.duration === seconds ? "chosen" : ""
+                        )
                       }
+                    />
+                    Skip difficult letters (Q, X, Z)
+                  </label>
+                  <button
+                    className="primary wide"
+                    onClick={() =>
+                      run(() =>
+                        update((s) => {
+                          s.toolLetter = pick(letters(s.settings.easyLetters));
+                        }),
+                      )
+                    }
+                  >
+                    <Shuffle size={17} />
+                    Generate letter
+                  </button>
+                </section>
+                <section id="tool-dice" className="tool panel">
+                  <div className="tool-heading">
+                    <span className="tool-icon peach">
+                      <Dices />
+                    </span>
+                    <div>
+                      <h2>Roll the dice</h2>
+                      <p>No chasing dice under the sofa.</p>
+                    </div>
+                  </div>
+                  <div className="dice-tray">
+                    {state.toolDice.map((value, i) => (
+                      <DiceFace key={i} value={value} />
+                    ))}
+                  </div>
+                  <label className="inline-field">
+                    Number of dice
+                    <select
+                      aria-label="Number of dice"
+                      value={state.toolDice.length}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        run(() =>
+                          update((s) => {
+                            s.toolDice = Array.from({ length: n }, () => 1);
+                          }),
+                        );
+                      }}
+                    >
+                      <option value={1}>1 die</option>
+                      <option value={2}>2 dice</option>
+                      <option value={3}>3 dice</option>
+                    </select>
+                  </label>
+                  <button
+                    className="primary wide"
+                    onClick={() =>
+                      run(() =>
+                        update((s) => {
+                          s.toolDice = s.toolDice.map(() => randomInt(1, 6));
+                        }),
+                      )
+                    }
+                  >
+                    <Dices size={18} />
+                    Roll dice{" "}
+                    {state.toolDice.length > 1 &&
+                      `· Total ${state.toolDice.reduce((a, b) => a + b, 0)}`}
+                  </button>
+                </section>
+                <section id="tool-cards" className="tool panel">
+                  <div className="tool-heading">
+                    <span className="tool-icon mint">♠</span>
+                    <div>
+                      <h2>Draw a card</h2>
+                      <p>A full deck. No repeats until you reshuffle.</p>
+                    </div>
+                  </div>
+                  <div className="card-tray">
+                    <CardFace card={state.toolCard ?? undefined} />
+                  </div>
+                  <div className="tool-note">
+                    {state.toolDeck.length} of 52 cards remaining · Aces are low
+                  </div>
+                  <div className="button-row">
+                    <button
+                      className="secondary"
+                      onClick={() =>
+                        run(
+                          () =>
+                            update((s) => {
+                              s.toolDeck = newDeck();
+                              s.toolCard = null;
+                            }),
+                          "Deck reshuffled.",
+                        )
+                      }
+                    >
+                      <RefreshCw size={16} />
+                      Shuffle
+                    </button>
+                    <button
+                      className="primary"
+                      disabled={!state.toolDeck.length}
                       onClick={() =>
                         run(() =>
                           update((s) => {
-                            s.toolTimer = {
-                              duration: seconds,
-                              remaining: seconds,
-                              deadline: null,
-                            };
+                            s.toolCard = s.toolDeck.pop() ?? null;
                           }),
                         )
                       }
                     >
-                      {seconds < 60 ? `${seconds}s` : `${seconds / 60}m`}
+                      Draw card <ArrowRight size={16} />
                     </button>
-                  ))}
-                </div>
-                <div className="button-row">
+                  </div>
+                </section>
+                <section id="tool-number" className="tool panel">
+                  <div className="tool-heading">
+                    <span className="tool-icon yellow">#</span>
+                    <div>
+                      <h2>Pick a number</h2>
+                      <p>Leave the choosing up to chance.</p>
+                    </div>
+                  </div>
+                  <div className="tool-value">{state.toolNumber ?? "?"}</div>
+                  <div className="range-fields">
+                    <label>
+                      From
+                      <input
+                        type="number"
+                        aria-label="Minimum number"
+                        value={state.numberMin}
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          run(() =>
+                            update((s) => {
+                              s.numberMin = n;
+                            }),
+                          );
+                        }}
+                      />
+                    </label>
+                    <span>to</span>
+                    <label>
+                      To
+                      <input
+                        type="number"
+                        aria-label="Maximum number"
+                        value={state.numberMax}
+                        onChange={(e) => {
+                          const n = Number(e.target.value);
+                          run(() =>
+                            update((s) => {
+                              s.numberMax = n;
+                            }),
+                          );
+                        }}
+                      />
+                    </label>
+                  </div>
                   <button
-                    className="secondary"
+                    className="primary wide"
                     onClick={() =>
                       run(() =>
                         update((s) => {
-                          s.toolTimer.remaining = s.toolTimer.duration;
-                          s.toolTimer.deadline = null;
+                          s.toolNumber = randomInt(s.numberMin, s.numberMax);
                         }),
                       )
                     }
                   >
-                    <RefreshCw size={16} />
-                    Reset
+                    <Shuffle size={17} />
+                    Generate number
                   </button>
-                  <button
-                    className="primary"
-                    onClick={() =>
-                      run(() =>
-                        update((s) => {
-                          if (s.toolTimer.deadline) {
-                            s.toolTimer.remaining = Math.max(
-                              0,
-                              (s.toolTimer.deadline - Date.now()) / 1000,
-                            );
+                </section>
+                <section
+                  id="tool-timer"
+                  className="tool panel standalone-timer"
+                >
+                  <div className="tool-heading">
+                    <span className="tool-icon peach">
+                      <Timer />
+                    </span>
+                    <div>
+                      <h2>Beat the clock</h2>
+                      <p>A timer for whatever you’re playing.</p>
+                    </div>
+                  </div>
+                  <div
+                    className={`tool-value ${toolRemaining === 0 ? "danger" : ""}`}
+                    role="timer"
+                    aria-label={`${toolRemaining} seconds remaining`}
+                  >
+                    {String(Math.floor(toolRemaining / 60)).padStart(2, "0")}:
+                    {String(toolRemaining % 60).padStart(2, "0")}
+                  </div>
+                  {toolRemaining === 0 && (
+                    <p className="timer-done" role="status">
+                      Time’s up!
+                    </p>
+                  )}
+                  <div className="timer-presets">
+                    {[30, 60, 120, 300].map((seconds) => (
+                      <button
+                        key={seconds}
+                        className={
+                          state.toolTimer.duration === seconds ? "chosen" : ""
+                        }
+                        onClick={() =>
+                          run(() =>
+                            update((s) => {
+                              s.toolTimer = {
+                                duration: seconds,
+                                remaining: seconds,
+                                deadline: null,
+                              };
+                            }),
+                          )
+                        }
+                      >
+                        {seconds < 60 ? `${seconds}s` : `${seconds / 60}m`}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="button-row">
+                    <button
+                      className="secondary"
+                      onClick={() =>
+                        run(() =>
+                          update((s) => {
+                            s.toolTimer.remaining = s.toolTimer.duration;
                             s.toolTimer.deadline = null;
-                          } else {
-                            if (s.toolTimer.remaining === 0)
-                              s.toolTimer.remaining = s.toolTimer.duration;
-                            s.toolTimer.deadline =
-                              Date.now() + s.toolTimer.remaining * 1000;
-                          }
-                        }),
-                      )
-                    }
-                  >
-                    {state.toolTimer.deadline ? (
-                      <Pause size={16} />
-                    ) : (
-                      <Play size={16} />
-                    )}{" "}
-                    {state.toolTimer.deadline ? "Pause" : "Start timer"}
+                          }),
+                        )
+                      }
+                    >
+                      <RefreshCw size={16} />
+                      Reset
+                    </button>
+                    <button
+                      className="primary"
+                      onClick={() =>
+                        run(() =>
+                          update((s) => {
+                            if (s.toolTimer.deadline) {
+                              s.toolTimer.remaining = Math.max(
+                                0,
+                                (s.toolTimer.deadline - Date.now()) / 1000,
+                              );
+                              s.toolTimer.deadline = null;
+                            } else {
+                              if (s.toolTimer.remaining === 0)
+                                s.toolTimer.remaining = s.toolTimer.duration;
+                              s.toolTimer.deadline =
+                                Date.now() + s.toolTimer.remaining * 1000;
+                            }
+                          }),
+                        )
+                      }
+                    >
+                      {state.toolTimer.deadline ? (
+                        <Pause size={16} />
+                      ) : (
+                        <Play size={16} />
+                      )}{" "}
+                      {state.toolTimer.deadline ? "Pause" : "Start timer"}
+                    </button>
+                  </div>
+                </section>
+                <section className="tool-tip mint">
+                  <Sparkles size={30} />
+                  <h2>
+                    One toolkit.
+                    <br />
+                    Endless possibilities.
+                  </h2>
+                  <p>
+                    Make up your own games, settle who goes first, or roll your
+                    way to a new holiday tradition.
+                  </p>
+                  <button className="text-button" onClick={() => go("scores")}>
+                    Keep score as you go <ArrowRight size={17} />
                   </button>
-                </div>
-              </section>
-              <section className="tool-tip mint">
-                <Sparkles size={30} />
-                <h2>
-                  One toolkit.
-                  <br />
-                  Endless possibilities.
-                </h2>
-                <p>
-                  Make up your own games, settle who goes first, or roll your
-                  way to a new holiday tradition.
-                </p>
-                <button className="text-button" onClick={() => go("scores")}>
-                  Keep score as you go <ArrowRight size={17} />
-                </button>
-              </section>
-            </div>
+                </section>
+              </div>
+            </>
           )}
           {screen === "play" &&
             (!round ? (
@@ -1537,8 +1607,21 @@ export default function App() {
                               </small>
                             </span>
                           </div>
+                          <button
+                            className="record-toggle text-button"
+                            aria-pressed={recordAnswers}
+                            aria-controls="answer-entry"
+                            onClick={() => {
+                              setRecordAnswers(!recordAnswers);
+                              setAnswer("");
+                            }}
+                          >
+                            {recordAnswers
+                              ? "Playing out loud instead?"
+                              : "Record answers (optional)"}
+                          </button>
                           <form
-                            className="answer-form"
+                            className={`answer-form ${recordAnswers ? "recording" : ""}`}
                             onSubmit={(e) => {
                               e.preventDefault();
                               run(() =>
@@ -1551,14 +1634,18 @@ export default function App() {
                               });
                             }}
                           >
-                            <input
-                              value={answer}
-                              aria-label="Player answer"
-                              placeholder={`Answer beginning with ${round.letter} (optional)`}
-                              maxLength={100}
-                              onChange={(e) => setAnswer(e.target.value)}
-                              disabled={!!round.challenge}
-                            />
+                            <div id="answer-entry" className="answer-entry">
+                              <input
+                                value={answer}
+                                aria-label="Player answer"
+                                placeholder={`Answer beginning with ${round.letter}`}
+                                autoComplete="off"
+                                enterKeyHint="done"
+                                maxLength={100}
+                                onChange={(e) => setAnswer(e.target.value)}
+                                disabled={!!round.challenge}
+                              />
+                            </div>
                             <button
                               className="primary"
                               disabled={!!round.challenge}
@@ -2317,6 +2404,48 @@ export default function App() {
           </footer>
         </main>
       </div>
+      <nav
+        className="mobile-tabs"
+        aria-label="Quick navigation"
+        inert={menu || !!modal}
+      >
+        {nav.slice(0, 4).map((item) => (
+          <button
+            key={item.id}
+            aria-current={
+              screen === item.id || (item.id === "games" && screen === "play")
+                ? "page"
+                : undefined
+            }
+            onClick={() => go(item.id)}
+          >
+            <item.icon size={22} />
+            <span>
+              {item.id === "home"
+                ? "Home"
+                : item.id === "games"
+                  ? "Games"
+                  : item.id === "tools"
+                    ? "Tools"
+                    : "Scores"}
+            </span>
+          </button>
+        ))}
+        <button
+          aria-label="More navigation options"
+          aria-expanded={menu}
+          aria-controls="app-navigation"
+          aria-current={
+            ["packs", "history", "settings"].includes(screen)
+              ? "page"
+              : undefined
+          }
+          onClick={() => setMenu(true)}
+        >
+          <Menu size={22} />
+          <span>More</span>
+        </button>
+      </nav>
       {modal && (
         <ModalShell
           title={

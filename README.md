@@ -2,6 +2,16 @@
 
 An offline-first family holiday game app built from the shared ChatGPT brief.
 
+## Docker
+
+The app includes a production `Dockerfile`, `.dockerignore` and Nginx configuration. From the workspace root (two directories above this app), run:
+
+```sh
+docker compose up --build -d --wait
+```
+
+Then open http://localhost:8080. See [the workspace Docker instructions](../../README.md) for configuration, logs, shutdown and offline behaviour. Node and app dependencies are needed only inside the build stage; the running container serves static files as a non-root user.
+
 ## Run locally
 
 Requires Node 22.12+ (Node 24 recommended).
@@ -60,6 +70,10 @@ Supabase references: [RLS](https://supabase.com/docs/guides/database/postgres/ro
 - `src/cloud.ts`: optional backup, independent of gameplay.
 - `src/App.tsx` and `src/styles.css`: responsive app interface.
 - `.openai/hosting.json`: static Sites hosting configuration.
+
+## Mobile interface
+
+Phones use a fixed Home / Games / Tools / Scores / More bar, a sticky header, and safe-area spacing for home indicators and camera cutouts. Controls are at least 44px tall and form text is 16px to avoid automatic input zoom. Dialogs become scrollable bottom sheets and trap focus while keeping the background still. Tools have quick-jump shortcuts; scoreboard cards keep all point adjustments available on small screens. Quick Stop defaults to spoken answers on phones, with an optional recording field, while desktop keeps the original typed-answer layout.
 
 ## Verification
 
