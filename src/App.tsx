@@ -430,21 +430,31 @@ export default function App() {
       state.lastBackupRevision === state.revision
     )
       return;
-    const t = setTimeout(async () => {
-      if (syncRef.current) return;
+    let cancelled = false;
+    let retryTimer: number | undefined;
+    const sync = async () => {
+      if (cancelled || syncRef.current) return;
       syncRef.current = true;
       try {
         await backup();
-        setSyncStatus("Cloud backup up to date");
+        setSyncStatus("Scores and game progress backed up");
       } catch {
         setSyncStatus(
           "Backup will retry. Your games are saved on this device.",
         );
+        if (!cancelled && navigator.onLine) {
+          retryTimer = window.setTimeout(sync, 30_000);
+        }
       } finally {
         syncRef.current = false;
       }
-    }, 2500);
-    return () => clearTimeout(t);
+    };
+    const initialTimer = window.setTimeout(sync, 2500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(initialTimer);
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+    };
   }, [state?.revision, user, online]);
   useEffect(() => {
     if (expireRef.current || !state) return;
@@ -2378,8 +2388,10 @@ export default function App() {
                   <>
                     <p className="muted">Signed in as {user}</p>
                     <p role="status">
-                      {syncStatus ||
-                        "Your backup will save automatically when connected."}
+                      {!online
+                        ? "Waiting for a connection. Scores are safe on this device."
+                        : syncStatus ||
+                          "Scores and game progress back up automatically when connected."}
                     </p>
                     <div className="button-row">
                       <button
