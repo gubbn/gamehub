@@ -5,6 +5,8 @@ import {
   bundledPictures,
   eliPacks,
   eliChoiceCounts,
+  colourQuestion,
+  matchingCards,
   packPictures,
   practicePictures,
   setEliPack,
@@ -14,6 +16,7 @@ import {
   recognitionWord,
   starterPictures,
   validateEliBackup,
+  yesNoQuestion,
 } from "./eli-data";
 import { eliDb, initializeEli, updateEli } from "./eli-db";
 import { db, initialize, exportState } from "./db";
@@ -212,6 +215,34 @@ describe("Eli picture recognition", () => {
     expect(() => recognitionQuestion(pool.slice(0, 1), 2)).toThrow(
       /at least two/,
     );
+  });
+  it("builds a shuffled matching game with every picture appearing twice", () => {
+    const cards = matchingCards(starterPictures, 3);
+    expect(cards).toHaveLength(6);
+    expect(new Set(cards.map((card) => card.key)).size).toBe(6);
+    const counts = cards.reduce<Record<string, number>>((all, card) => {
+      all[card.picture.id] = (all[card.picture.id] ?? 0) + 1;
+      return all;
+    }, {});
+    expect(Object.values(counts)).toEqual([2, 2, 2]);
+    expect(() => matchingCards(starterPictures.slice(0, 1))).toThrow(/two/);
+  });
+  it("creates accurate yes-or-no prompts and avoids the previous picture", () => {
+    const yes = yesNoQuestion(starterPictures, starterPictures[0].id, () => 0);
+    expect(yes.target.id).not.toBe(starterPictures[0].id);
+    expect(yes.word).toBe(recognitionWord(yes.target));
+    expect(yes.answer).toBe(true);
+    const no = yesNoQuestion(starterPictures, undefined, () => 0.9);
+    expect(no.word).not.toBe(recognitionWord(no.target));
+    expect(no.answer).toBe(false);
+    expect(() => yesNoQuestion(starterPictures.slice(0, 1))).toThrow(/two/);
+  });
+  it("offers three exact colour swatches without repeating the target", () => {
+    const first = colourQuestion();
+    const next = colourQuestion(first.target.id);
+    expect(first.options).toHaveLength(3);
+    expect(first.options.every((picture) => picture.kind === "colour")).toBe(true);
+    expect(next.target.id).not.toBe(first.target.id);
   });
   it("validates picture backups and strips unexpected fields", () => {
     const exported = backup();

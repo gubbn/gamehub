@@ -169,6 +169,39 @@ export function recognitionQuestion(
   );
   return { target, options: shuffle([target, ...others]) };
 }
+export type MatchingCard = {
+  key: string;
+  picture: Picture;
+};
+export function matchingCards(pool: Picture[], pairs = 3): MatchingCard[] {
+  if (pool.length < 2)
+    throw new Error("Choose at least two pictures for Match Pair.");
+  const selected = shuffle(pool).slice(0, Math.min(pairs, pool.length));
+  return shuffle(
+    selected.flatMap((picture) => [
+      { key: `${picture.id}-a`, picture },
+      { key: `${picture.id}-b`, picture },
+    ]),
+  );
+}
+export function yesNoQuestion(
+  pool: Picture[],
+  previous?: string,
+  random = Math.random,
+) {
+  if (pool.length < 2)
+    throw new Error("Choose at least two pictures for Yes or No.");
+  const available = pool.filter((picture) => picture.id !== previous);
+  const target = pick(available.length ? available : pool);
+  const answer = random() < 0.5;
+  const named = answer
+    ? target
+    : pick(pool.filter((picture) => picture.id !== target.id));
+  return { target, word: recognitionWord(named), answer };
+}
+export function colourQuestion(previous?: string) {
+  return recognitionQuestion(packPictures("colours"), 3, previous);
+}
 export function validateEliBackup(value: unknown): EliLibrary {
   const root = value as {
     format?: string;

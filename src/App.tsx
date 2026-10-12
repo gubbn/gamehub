@@ -10,6 +10,7 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 import {
   ArrowLeft,
   ArrowRight,
+  Calculator,
   Check,
   ChevronRight,
   Cloud,
@@ -61,7 +62,15 @@ import { games, packs, categoriesFor, type GameId, type PackId } from "./data";
 import { cardLabel, newDeck, pick, randomInt, letters } from "./random";
 import { cloud, backup, listBackups, restore } from "./cloud";
 import { EliZone } from "./EliZone";
+import { ImmyZone } from "./ImmyZone";
 import { UnoZone } from "./UnoZone";
+import {
+  Hangman,
+  RockPaperScissors,
+  WouldYouRather,
+  partyGameCards,
+} from "./PartyGames";
+import { TriviaQuiz } from "./SocialGames";
 
 type Screen =
   | "home"
@@ -72,7 +81,12 @@ type Screen =
   | "history"
   | "settings"
   | "eli"
+  | "immy"
   | "uno"
+  | "would-you-rather"
+  | "hangman"
+  | "trivia"
+  | "rock-paper-scissors"
   | "play";
 type Modal = {
   type: "players" | "setup" | "rules" | "session" | "confirm";
@@ -103,6 +117,7 @@ const nav = [
   { id: "packs", label: "Game packs", icon: Layers },
   { id: "history", label: "Our memories", icon: History },
   { id: "eli", label: "Eli Zone", icon: Shapes },
+  { id: "immy", label: "Immy Zone", icon: Calculator },
   { id: "uno", label: "Uno variants", icon: Layers },
 ] as const;
 type InstallEvent = Event & {
@@ -120,7 +135,12 @@ function initialScreen(): Screen {
     "history",
     "settings",
     "eli",
+    "immy",
     "uno",
+    "would-you-rather",
+    "hangman",
+    "trivia",
+    "rock-paper-scissors",
     "play",
   ].includes(name)
     ? (name as Screen)
@@ -537,12 +557,15 @@ export default function App() {
     state.settings.target > 0
       ? sorted.find((p) => p.score >= state.settings.target)
       : undefined;
-  function gameCard(game: (typeof games)[number]) {
+  function gameCard(
+    game: (typeof games)[number] | (typeof partyGameCards)[number],
+    action?: () => void,
+  ) {
     return (
       <button
         key={game.id}
         className={`game-card ${game.color}`}
-        onClick={() => choose(game.id)}
+        onClick={action ?? (() => choose(game.id as GameId))}
       >
         <div className="game-art">
           <span>{game.icon}</span>
@@ -626,7 +649,12 @@ export default function App() {
     history: "The good times, remembered.",
     settings: "Make yourself at home.",
     eli: "Eli Zone",
+    immy: "Immy Zone",
     uno: "Uno variants",
+    "would-you-rather": "Would you rather?",
+    hangman: "Guess it before it’s drawn.",
+    trivia: "Put your knowledge to the test.",
+    "rock-paper-scissors": "Ready, set, choose.",
     play:
       games.find((g) => g.id === round?.game)?.name ?? "Ready when you are.",
   }[screen];
@@ -753,8 +781,18 @@ export default function App() {
               <div className="eyebrow">
                 {screen === "uno"
                   ? "A NEW TWIST ON CARD NIGHT"
+                  : screen === "immy"
+                    ? "FAST SUMS. BIG STREAKS."
                   : screen === "eli"
                     ? "A LITTLE WORLD TO EXPLORE"
+                    : screen === "would-you-rather"
+                      ? "PICK A SIDE. DEFEND YOUR CHOICE."
+                      : screen === "hangman"
+                        ? "ONE WORD. SIX CHANCES."
+                      : screen === "trivia"
+                          ? "QUESTIONS READY. THINKING CAPS ON."
+                        : screen === "rock-paper-scissors"
+                          ? "ONE PLAYER. THREE MOVES."
                     : screen === "home"
                       ? "LESS SCROLLING. MORE LAUGHING."
                       : screen === "play"
@@ -767,8 +805,18 @@ export default function App() {
               <p>
                 {screen === "uno"
                   ? "A little luck. A chain of swaps. Race to put every number in place."
+                  : screen === "immy"
+                    ? "Choose your tables, beat the clock and build a brilliant streak."
                   : screen === "eli"
                     ? "Simple pictures. Gentle games. Little discoveries together."
+                    : screen === "would-you-rather"
+                      ? "Kids or grown-ups, everyone gets a vote and an opinion."
+                      : screen === "hangman"
+                        ? "Pick a word pack, choose your letters and solve the puzzle."
+                        : screen === "trivia"
+                            ? "Choose a pack, answer together and chase the perfect round."
+                          : screen === "rock-paper-scissors"
+                            ? "Take on the computer and race to five wins."
                     : screen === "home"
                       ? "Bring your favourite people. We’ll bring the games."
                       : screen === "games"
@@ -804,6 +852,12 @@ export default function App() {
                 How to play
               </button>
             )}
+            {(["would-you-rather", "hangman", "trivia", "rock-paper-scissors"] as Screen[]).includes(screen) && (
+              <button className="secondary" onClick={() => go("games")}>
+                <ArrowLeft size={17} />
+                All games
+              </button>
+            )}
           </div>
           {(screen === "home" || screen === "games") && (
             <button
@@ -823,8 +877,29 @@ export default function App() {
               <ArrowRight size={20} />
             </button>
           )}
+          {(screen === "home" || screen === "games") && (
+            <button
+              className="panel eli-home-banner immy-home-banner"
+              aria-label="Open Immy Zone"
+              onClick={() => go("immy")}
+            >
+              <span className="eli-home-icon">
+                <Calculator size={30} />
+              </span>
+              <span>
+                <strong>Immy Zone</strong>
+                <small>Pick your times tables and race through rapid-fire sums.</small>
+              </span>
+              <ArrowRight size={20} />
+            </button>
+          )}
           {screen === "eli" && <EliZone />}
+          {screen === "immy" && <ImmyZone />}
           {screen === "uno" && <UnoZone state={state} />}
+          {screen === "would-you-rather" && <WouldYouRather />}
+          {screen === "hangman" && <Hangman />}
+          {screen === "trivia" && <TriviaQuiz />}
+          {screen === "rock-paper-scissors" && <RockPaperScissors />}
           {(screen === "home" || screen === "games") && (
             <button className="panel uno-banner" onClick={() => go("uno")}>
               <Layers size={30} />
@@ -905,7 +980,7 @@ export default function App() {
                     <p className="muted">
                       {screen === "home"
                         ? "A little competition. A lot of memories."
-                        : "Four ways to turn spare time into a good time."}
+                        : "Plenty of ways to turn spare time into a good time."}
                     </p>
                   </div>
                   {screen === "home" && (
@@ -920,7 +995,10 @@ export default function App() {
                   {(screen === "home"
                     ? games.filter((g) => g.id !== "quick-stop")
                     : games
-                  ).map(gameCard)}
+                  ).map((game) => gameCard(game))}
+                  {partyGameCards.map((game) =>
+                    gameCard(game, () => go(game.id)),
+                  )}
                 </div>
               </section>
               {screen === "home" && (
@@ -2491,7 +2569,10 @@ export default function App() {
           <button
             key={item.id}
             aria-current={
-              screen === item.id || (item.id === "games" && screen === "play")
+              screen === item.id ||
+              (item.id === "games" && screen === "play") ||
+                (item.id === "games" &&
+                  (["would-you-rather", "hangman", "trivia", "rock-paper-scissors"] as Screen[]).includes(screen))
                 ? "page"
                 : undefined
             }
@@ -2514,7 +2595,7 @@ export default function App() {
           aria-expanded={menu}
           aria-controls="app-navigation"
           aria-current={
-            ["packs", "history", "settings", "eli"].includes(screen)
+            ["packs", "history", "settings", "eli", "immy", "uno"].includes(screen)
               ? "page"
               : undefined
           }

@@ -11,8 +11,17 @@ create table if not exists public.gamehub_backups (
   primary key (owner_id, id)
 );
 alter table public.gamehub_backups enable row level security;
+
+-- Tables are not exposed through the Data API without explicit privileges.
 revoke all on public.gamehub_backups from anon, authenticated;
 grant select, insert, update, delete on public.gamehub_backups to authenticated;
+
+-- Keep this script safe to run again while refining a project setup.
+drop policy if exists "Read own device backups" on public.gamehub_backups;
+drop policy if exists "Create own device backups" on public.gamehub_backups;
+drop policy if exists "Update own device backups" on public.gamehub_backups;
+drop policy if exists "Delete own device backups" on public.gamehub_backups;
+
 create policy "Read own device backups" on public.gamehub_backups
   for select to authenticated using ((select auth.uid()) = owner_id);
 create policy "Create own device backups" on public.gamehub_backups

@@ -5,10 +5,13 @@ import {
   ArrowRight,
   BookOpen,
   Check,
+  CircleHelp,
+  Copy,
   Download,
   Eye,
   Heart,
   ImagePlus,
+  Palette,
   Plus,
   Search,
   Sparkles,
@@ -18,8 +21,10 @@ import {
 import {
   allPictures,
   bundledPictures,
+  colourQuestion,
   eliPacks,
   eliChoiceCounts,
+  matchingCards,
   practicePictures,
   setEliPack,
   eliPalettes,
@@ -29,7 +34,9 @@ import {
   recognitionQuestion,
   recognitionWord,
   validateEliBackup,
+  yesNoQuestion,
   type EliChoiceCount,
+  type MatchingCard,
   type Picture,
   type PictureCategory,
 } from "./eli-data";
@@ -41,7 +48,14 @@ import "./eli.css";
 export function EliZone() {
   const library = useLiveQuery(() => eliDb.library.get("main"));
   const [view, setView] = useState<
-    "welcome" | "library" | "packs" | "find" | "name"
+    | "welcome"
+    | "library"
+    | "packs"
+    | "find"
+    | "name"
+    | "match"
+    | "yes-no"
+    | "colour"
   >("welcome");
   const [category, setCategory] = useState("All pictures");
   const [pack, setPack] = useState("all");
@@ -50,6 +64,17 @@ export function EliZone() {
     typeof recognitionQuestion
   > | null>(null);
   const [naming, setNaming] = useState<Picture | null>(null);
+  const [matchCards, setMatchCards] = useState<MatchingCard[]>([]);
+  const [flipped, setFlipped] = useState<string[]>([]);
+  const [matched, setMatched] = useState<Set<string>>(() => new Set());
+  const [yesNo, setYesNo] = useState<ReturnType<typeof yesNoQuestion> | null>(
+    null,
+  );
+  const [yesNoAnswer, setYesNoAnswer] = useState<boolean | null>(null);
+  const [colour, setColour] = useState<ReturnType<typeof colourQuestion> | null>(
+    null,
+  );
+  const [colourSelected, setColourSelected] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [selected, setSelected] = useState("");
   const [round, setRound] = useState(1);
@@ -101,6 +126,19 @@ export function EliZone() {
     if (selected && selected === question?.target.id)
       feedbackRef.current?.focus({ preventScroll: true });
   }, [selected, question]);
+  useEffect(() => {
+    if (flipped.length !== 2) return;
+    const [first, second] = flipped.map((key) =>
+      matchCards.find((card) => card.key === key),
+    );
+    const timer = window.setTimeout(() => {
+      if (first && second && first.picture.id === second.picture.id) {
+        setMatched((current) => new Set(current).add(first.picture.id));
+      }
+      setFlipped([]);
+    }, first?.picture.id === second?.picture.id ? 450 : 750);
+    return () => window.clearTimeout(timer);
+  }, [flipped, matchCards]);
   const say = (word: string) => {
     if (!voice) {
       setNotice(
@@ -152,6 +190,10 @@ export function EliZone() {
       p.label.toLowerCase().includes(search.trim().toLowerCase()),
   );
   const correct = !!question && selected === question.target.id;
+  const yesNoCorrect = yesNoAnswer !== null && yesNoAnswer === yesNo?.answer;
+  const colourCorrect = !!colour && colourSelected === colour.target.id;
+  const matchComplete =
+    matchCards.length > 0 && matched.size === matchCards.length / 2;
   const packPicker = (
     <label>
       Practice pack
@@ -174,21 +216,33 @@ export function EliZone() {
       </select>
     </label>
   );
-  const start = (mode: "find" | "name") => {
+  const start = (mode: "find" | "name" | "match" | "yes-no" | "colour") => {
     setNotice("");
-    if (mode === "find" && pool.length < 2) {
+    if (["find", "match", "yes-no"].includes(mode) && pool.length < 2) {
       setNotice(
-        "Include at least two pictures in this category to play Find it.",
+        `Include at least two pictures in this category to play ${mode === "match" ? "Match Pair" : mode === "yes-no" ? "Yes or No" : "Find it"}.`,
       );
       return;
     }
-    if (!pool.length) {
+    if (mode !== "colour" && !pool.length) {
       setNotice("Include a picture in this category to play.");
       return;
     }
-    if (mode === "find")
+    if (mode === "find") {
       setQuestion(recognitionQuestion(pool, library.choices));
-    else setNaming(pick(pool));
+    } else if (mode === "name") {
+      setNaming(pick(pool));
+    } else if (mode === "match") {
+      setMatchCards(matchingCards(pool, 3));
+      setFlipped([]);
+      setMatched(new Set());
+    } else if (mode === "yes-no") {
+      setYesNo(yesNoQuestion(pool));
+      setYesNoAnswer(null);
+    } else {
+      setColour(colourQuestion());
+      setColourSelected("");
+    }
     setSelected("");
     setRevealed(false);
     setRound(1);
@@ -211,6 +265,26 @@ export function EliZone() {
     const others = pool.filter((p) => p.id !== naming?.id);
     setNaming(pick(others.length ? others : pool));
     setRevealed(false);
+  };
+  const nextYesNo = () => {
+    if (round === 5) {
+      setComplete(true);
+      return;
+    }
+    setYesNo(yesNoQuestion(pool, yesNo?.target.id));
+    setYesNoAnswer(null);
+    setRound(round + 1);
+    gameHeadingRef.current?.focus({ preventScroll: true });
+  };
+  const nextColour = () => {
+    if (round === 5) {
+      setComplete(true);
+      return;
+    }
+    setColour(colourQuestion(colour?.target.id));
+    setColourSelected("");
+    setRound(round + 1);
+    gameHeadingRef.current?.focus({ preventScroll: true });
   };
   const exportLibrary = () => {
     const url = URL.createObjectURL(
@@ -380,7 +454,7 @@ export function EliZone() {
                       setCategory("All pictures");
                       setView("welcome");
                       setNotice(
-                        `Practising ${p.label}. Choose Find it or Name it.`,
+                        `Practising ${p.label}. Choose a picture game.`,
                       );
                     }}
                   >
@@ -451,6 +525,57 @@ export function EliZone() {
               </p>
               <span>
                 Let’s name it <ArrowRight size={17} />
+              </span>
+            </button>
+            <button
+              className="eli-mode-card panel"
+              onClick={() => start("match")}
+            >
+              <span className="eli-mode-icon rose">
+                <Copy />
+              </span>
+              <h2>Match Pair</h2>
+              <p>
+                Turn over two cards.
+                <br />
+                Can you find the pair?
+              </p>
+              <span>
+                Let’s match <ArrowRight size={17} />
+              </span>
+            </button>
+            <button
+              className="eli-mode-card panel"
+              onClick={() => start("yes-no")}
+            >
+              <span className="eli-mode-icon sky">
+                <CircleHelp />
+              </span>
+              <h2>Yes or No</h2>
+              <p>
+                “Is this a rabbit?”
+                <br />
+                Look closely and choose.
+              </p>
+              <span>
+                Let’s choose <ArrowRight size={17} />
+              </span>
+            </button>
+            <button
+              className="eli-mode-card panel"
+              onClick={() => start("colour")}
+            >
+              <span className="eli-mode-icon yellow">
+                <Palette />
+              </span>
+              <h2>Find the Colour</h2>
+              <p>
+                “Where’s the blue?”
+                <br />
+                Tap the matching colour.
+              </p>
+              <span>
+                Let’s find colours <ArrowRight size={17} />
               </span>
             </button>
           </div>
@@ -532,7 +657,9 @@ export function EliZone() {
           </section>
         </>
       )}
-      {(view === "find" || view === "name") && (
+      {(["find", "name", "match", "yes-no", "colour"] as const).includes(
+        view as "find" | "name" | "match" | "yes-no" | "colour",
+      ) && (
         <>
           <button
             className="text-button eli-back"
@@ -658,6 +785,178 @@ export function EliZone() {
               </p>
             </div>
           )}
+          {view === "match" && matchCards.length > 0 && (
+            <div className="panel eli-play-panel eli-match-panel">
+              <div className="eli-round-top">
+                <span>MATCH PAIR</span>
+                <span>{matched.size} of {matchCards.length / 2} pairs</span>
+              </div>
+              <h2 ref={gameHeadingRef} tabIndex={-1}>
+                {matchComplete ? "You found every pair!" : "Find the matching pictures"}
+              </h2>
+              <p className="eli-game-prompt">
+                {matchComplete
+                  ? "Lovely remembering, Eli."
+                  : "Turn over two cards. If they match, they stay together."}
+              </p>
+              <div className="eli-match-grid" aria-label="Matching cards">
+                {matchCards.map((card) => {
+                  const open =
+                    flipped.includes(card.key) || matched.has(card.picture.id);
+                  return (
+                    <button
+                      key={card.key}
+                      className={`eli-match-card ${open ? "open" : ""} ${matched.has(card.picture.id) ? "matched" : ""}`}
+                      aria-label={open ? card.picture.label : "Hidden picture"}
+                      disabled={
+                        matchComplete ||
+                        matched.has(card.picture.id) ||
+                        flipped.length === 2 ||
+                        flipped.includes(card.key)
+                      }
+                      onClick={() => setFlipped((current) => [...current, card.key])}
+                    >
+                      <span className="eli-match-back" aria-hidden="true">
+                        <Sparkles />
+                      </span>
+                      <span className="eli-match-front">
+                        <PictureArt picture={card.picture} hiddenLabel />
+                        <strong>{card.picture.label}</strong>
+                        {matched.has(card.picture.id) && <Check aria-hidden="true" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="eli-feedback" role="status">
+                {matchComplete ? (
+                  <button className="primary" onClick={() => start("match")}>
+                    Play again <ArrowRight size={18} />
+                  </button>
+                ) : (
+                  <p>{flipped.length === 1 ? "Now find its matching picture." : "Tap a card to peek underneath."}</p>
+                )}
+              </div>
+            </div>
+          )}
+          {view === "yes-no" && yesNo &&
+            (complete ? (
+              <div className="panel eli-complete">
+                <span aria-hidden="true">🌟</span>
+                <h2>Brilliant choosing, Eli!</h2>
+                <p>Five careful looks. Ready for some more?</p>
+                <button className="primary" onClick={() => start("yes-no")}>
+                  Play again <ArrowRight size={18} />
+                </button>
+                <button className="text-button" onClick={() => setView("welcome")}>
+                  All done for now
+                </button>
+              </div>
+            ) : (
+              <div className="panel eli-play-panel eli-yes-no-panel">
+                <div className="eli-round-top">
+                  <span>YES OR NO</span>
+                  <span>{round} of 5</span>
+                </div>
+                <h2 ref={gameHeadingRef} tabIndex={-1}>
+                  Is this <strong>{yesNo.word}</strong>?
+                </h2>
+                <button
+                  className="secondary eli-say"
+                  onClick={() => say(`Is this ${yesNo.word}?`)}
+                >
+                  <Volume2 size={18} /> Hear the question
+                </button>
+                <div className="eli-question-picture">
+                  <PictureArt picture={yesNo.target} hiddenLabel />
+                </div>
+                <div className="eli-yes-no-actions">
+                  <button
+                    className={yesNoAnswer === true ? (yesNoCorrect ? "correct" : "try-again") : ""}
+                    disabled={yesNoCorrect}
+                    onClick={() => setYesNoAnswer(true)}
+                  >
+                    <Check size={25} /> Yes
+                  </button>
+                  <button
+                    className={yesNoAnswer === false ? (yesNoCorrect ? "correct" : "try-again") : ""}
+                    disabled={yesNoCorrect}
+                    onClick={() => setYesNoAnswer(false)}
+                  >
+                    <CircleHelp size={25} /> No
+                  </button>
+                </div>
+                <div className="eli-feedback" role="status">
+                  {yesNoCorrect ? (
+                    <>
+                      <strong>That’s right! It’s {recognitionWord(yesNo.target)}.</strong>
+                      <button ref={feedbackRef} className="primary" onClick={nextYesNo}>
+                        {round === 5 ? "All done!" : "Next picture"} <ArrowRight size={18} />
+                      </button>
+                    </>
+                  ) : (
+                    <p>{yesNoAnswer === null ? "Look at the picture, then choose yes or no." : "Have another look and try again."}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          {view === "colour" && colour &&
+            (complete ? (
+              <div className="panel eli-complete">
+                <span aria-hidden="true">🎨</span>
+                <h2>Lovely colours, Eli!</h2>
+                <p>Five bright finds. Ready for some more?</p>
+                <button className="primary" onClick={() => start("colour")}>
+                  Play again <ArrowRight size={18} />
+                </button>
+                <button className="text-button" onClick={() => setView("welcome")}>
+                  All done for now
+                </button>
+              </div>
+            ) : (
+              <div className="panel eli-play-panel eli-colour-panel">
+                <div className="eli-round-top">
+                  <span>FIND THE COLOUR</span>
+                  <span>{round} of 5</span>
+                </div>
+                <h2 ref={gameHeadingRef} tabIndex={-1}>
+                  Find <strong>{recognitionWord(colour.target)}</strong>
+                </h2>
+                <button
+                  className="secondary eli-say"
+                  onClick={() => say(`Find ${recognitionWord(colour.target)}`)}
+                >
+                  <Volume2 size={18} /> Hear the colour
+                </button>
+                <div className="eli-colour-choices">
+                  {colour.options.map((picture) => (
+                    <button
+                      key={picture.id}
+                      className={`${colourSelected === picture.id ? "selected" : ""} ${colourCorrect && colourSelected === picture.id ? "found" : ""}`}
+                      aria-label={`Choose ${picture.label}`}
+                      disabled={colourCorrect}
+                      onClick={() => setColourSelected(picture.id)}
+                    >
+                      <PictureArt picture={picture} hiddenLabel />
+                      <strong>{picture.label.replace(" colour", "")}</strong>
+                      {colourCorrect && colourSelected === picture.id && <Check aria-hidden="true" />}
+                    </button>
+                  ))}
+                </div>
+                <div className="eli-feedback" role="status">
+                  {colourCorrect ? (
+                    <>
+                      <strong>That’s it! You found {recognitionWord(colour.target)}.</strong>
+                      <button ref={feedbackRef} className="primary" onClick={nextColour}>
+                        {round === 5 ? "All found!" : "Next colour"} <ArrowRight size={18} />
+                      </button>
+                    </>
+                  ) : (
+                    <p>{colourSelected ? `Have another look. Where’s ${recognitionWord(colour.target)}?` : "Look at the colours and tap the matching one."}</p>
+                  )}
+                </div>
+              </div>
+            ))}
           {!voice && (
             <p className="eli-voice-note">
               Read the prompt aloud together. “Hear the word” works when an
