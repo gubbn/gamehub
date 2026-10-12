@@ -10,12 +10,15 @@ import {
   newSession,
   guessCard,
   award,
+  ensureFamilyPlayers,
+  familyPlayerTemplates,
   type State,
 } from "./engine";
 import { newDeck, cardLabel, randomInt } from "./random";
 import { categoriesFor, adultCategories, kidsCategories } from "./data";
 function crew() {
   const s = initialState();
+  s.players = [];
   ["Alex", "Sam", "Jamie"].forEach((name, i) =>
     addPlayer(s, name, ["🌞", "🦊", "🐼"][i]),
   );
@@ -27,6 +30,25 @@ describe("offline gameplay", () => {
     s = crew();
   });
   afterEach(() => vi.useRealTimers());
+  it("starts with the fixed family roster and preserves matching scores", () => {
+    const family = initialState();
+    expect(family.players.map((player) => player.name)).toEqual(
+      familyPlayerTemplates.map((player) => player.name),
+    );
+    family.players = [
+      { id: "existing-immy", name: "immy", avatar: "🐼", score: 12 },
+      { id: "guest", name: "Guest", avatar: "🐸", score: 4 },
+    ];
+    expect(ensureFamilyPlayers(family)).toBe(true);
+    expect(family.players).toHaveLength(6);
+    expect(family.players.find((player) => player.name === "Immy")).toEqual({
+      id: "existing-immy",
+      name: "Immy",
+      avatar: "🐼",
+      score: 12,
+    });
+    expect(family.players.some((player) => player.name === "Guest")).toBe(false);
+  });
   it("keeps a spoken-answer survivor in and advances to the next player", () => {
     vi.useFakeTimers();
     const r = startRound(s, "quick-stop");

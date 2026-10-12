@@ -160,7 +160,14 @@ describe("Uno solitaire house rules", () => {
     await db.open();
     const saved = (await db.state.get("main"))!;
     expect(saved.uno?.pending?.number).toBe(5);
-    expect(saved.players).toEqual([]);
+    expect(saved.players.map((player) => player.name)).toEqual([
+      "Mummy",
+      "Daddy",
+      "Immy",
+      "Eli",
+      "Nanna",
+      "Grandad",
+    ]);
     const file = JSON.parse(await exportState());
     expect(validateBackup(file).uno).toEqual(saved.uno);
     file.state.uno.current = 9;

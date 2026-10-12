@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
-import { initialState, type State } from "./engine";
+import { ensureFamilyPlayers, initialState, type State } from "./engine";
 import type { Card } from "./random";
 import { validUno } from "./uno";
 function validCard(card: unknown): card is Card {
@@ -18,7 +18,13 @@ export const db = new Dexie("gamehub-v1") as Dexie & {
 db.version(1).stores({ state: "key" });
 export async function initialize() {
   await db.transaction("rw", db.state, async () => {
-    if (!(await db.state.get("main"))) await db.state.put(initialState());
+    const state = await db.state.get("main");
+    if (!state) {
+      await db.state.put(initialState());
+    } else if (ensureFamilyPlayers(state)) {
+      state.revision++;
+      await db.state.put(state);
+    }
   });
 }
 export async function update(mutate: (state: State) => void) {
@@ -149,5 +155,6 @@ export function validateBackup(value: unknown): State {
     delete r.challenge;
   });
   copy.toolTimer.deadline = null;
+  ensureFamilyPlayers(copy);
   return copy;
 }

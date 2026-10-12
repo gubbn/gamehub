@@ -77,6 +77,56 @@ export type State = {
   lastBackupAt?: string;
   uno?: UnoGame;
 };
+
+export const familyPlayerTemplates = [
+  { id: "family-mummy", name: "Mummy", avatar: "🌞" },
+  { id: "family-daddy", name: "Daddy", avatar: "🦊" },
+  { id: "family-immy", name: "Immy", avatar: "🦋" },
+  { id: "family-eli", name: "Eli", avatar: "🚀" },
+  { id: "family-nanna", name: "Nanna", avatar: "🌸" },
+  { id: "family-grandad", name: "Grandad", avatar: "🦁" },
+] as const;
+
+export function ensureFamilyPlayers(s: State) {
+  const previous = s.players;
+  const players = familyPlayerTemplates.map((template) => {
+    const existing = previous.find(
+      (player) =>
+        player.name.toLocaleLowerCase() === template.name.toLocaleLowerCase(),
+    );
+    return {
+      id: existing?.id ?? template.id,
+      name: template.name,
+      avatar: existing?.avatar ?? template.avatar,
+      score: existing?.score ?? 0,
+    };
+  });
+  const changed =
+    players.length !== previous.length ||
+    players.some(
+      (player, index) =>
+        player.id !== previous[index]?.id ||
+        player.name !== previous[index]?.name ||
+        player.avatar !== previous[index]?.avatar ||
+        player.score !== previous[index]?.score,
+    );
+  if (!changed) return false;
+
+  s.players = players;
+  const currentRound = activeRound(s);
+  if (
+    currentRound?.status === "active" &&
+    currentRound.players.some(
+      (playerId) => !players.some((player) => player.id === playerId),
+    )
+  ) {
+    currentRound.status = "cancelled";
+    currentRound.deadline = null;
+    s.activeRound = null;
+  }
+  return true;
+}
+
 export function initialState(): State {
   const session = {
     id: crypto.randomUUID(),
@@ -87,7 +137,7 @@ export function initialState(): State {
     key: "main",
     id: crypto.randomUUID(),
     revision: 0,
-    players: [],
+    players: familyPlayerTemplates.map((player) => ({ ...player, score: 0 })),
     settings: {
       pack: "family",
       easyLetters: true,

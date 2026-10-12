@@ -77,6 +77,16 @@ export const partyGameCards = [
     players: "1 player",
     time: "First to 5",
   },
+  {
+    id: "noughts-crosses" as const,
+    name: "Noughts & Crosses",
+    tag: "THREE IN A ROW",
+    description: "Play a friend or take on the computer in a quick match.",
+    icon: "⭕",
+    color: "mint",
+    players: "1–2 players",
+    time: "Quick rounds",
+  },
 ];
 
 export function WouldYouRather() {

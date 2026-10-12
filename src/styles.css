@@ -2179,6 +2179,38 @@ hr {
   background: #eee7fb;
   border: 2px solid #baa3e8;
 }
+.player-logo-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 0 22px;
+}
+.player-logo-tabs button {
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e8e1eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #5f5668;
+  font-size: 11px;
+  font-weight: 700;
+}
+.player-logo-tabs button span { font-size: 22px; }
+.player-logo-tabs button.chosen {
+  border-color: #a88cdb;
+  background: #f1ebfb;
+  color: #624b88;
+}
+.logo-picker-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #635a6b;
+}
 .modal-crew,
 .setup-avatars {
   display: flex;

@@ -43,7 +43,6 @@ import {
 import { db, initialize, update, exportState, validateBackup } from "./db";
 import {
   activeRound,
-  addPlayer,
   acceptAnswer,
   award,
   eliminate,
@@ -63,6 +62,7 @@ import { cardLabel, newDeck, pick, randomInt, letters } from "./random";
 import { cloud, backup, listBackups, restore } from "./cloud";
 import { EliZone } from "./EliZone";
 import { ImmyZone } from "./ImmyZone";
+import { NoughtsCrosses } from "./NoughtsCrosses";
 import { UnoZone } from "./UnoZone";
 import {
   Hangman,
@@ -87,6 +87,7 @@ type Screen =
   | "hangman"
   | "trivia"
   | "rock-paper-scissors"
+  | "noughts-crosses"
   | "play";
 type Modal = {
   type: "players" | "setup" | "rules" | "session" | "confirm";
@@ -108,6 +109,7 @@ const avatars = [
   "🍉",
   "🌵",
   "🐝",
+  "🌸",
 ];
 const nav = [
   { id: "home", label: "Home", icon: Home },
@@ -141,6 +143,7 @@ function initialScreen(): Screen {
     "hangman",
     "trivia",
     "rock-paper-scissors",
+    "noughts-crosses",
     "play",
   ].includes(name)
     ? (name as Screen)
@@ -281,8 +284,7 @@ export default function App() {
       { id: string; device_name: string; updated_at: string }[]
     >([]),
     [busy, setBusy] = useState(false);
-  const [playerName, setPlayerName] = useState(""),
-    [avatar, setAvatar] = useState(avatars[0]),
+  const [editingPlayer, setEditingPlayer] = useState<string | null>(null),
     [answer, setAnswer] = useState(""),
     [custom, setCustom] = useState(""),
     [sessionName, setSessionName] = useState("Game night"),
@@ -567,6 +569,9 @@ export default function App() {
     state.settings.target > 0
       ? sorted.find((p) => p.score >= state.settings.target)
       : undefined;
+  const logoPlayer =
+    state.players.find((player) => player.id === editingPlayer) ??
+    state.players[0];
   function gameCard(
     game: (typeof games)[number] | (typeof partyGameCards)[number],
     action?: () => void,
@@ -635,12 +640,12 @@ export default function App() {
         <button
           className="secondary wide"
           onClick={() => {
-            setPlayerName("");
+            setEditingPlayer(state!.players[0]?.id ?? null);
             setModal({ type: "players" });
           }}
         >
-          <Plus size={17} />
-          Add a player
+          <Shapes size={17} />
+          Change player logos
         </button>
         {state!.players.length > 0 && (
           <button className="text-button wide" onClick={() => go("scores")}>
@@ -665,6 +670,7 @@ export default function App() {
     hangman: "Guess it before it’s drawn.",
     trivia: "Put your knowledge to the test.",
     "rock-paper-scissors": "Ready, set, choose.",
+    "noughts-crosses": "Make your mark.",
     play:
       games.find((g) => g.id === round?.game)?.name ?? "Ready when you are.",
   }[screen];
@@ -803,6 +809,8 @@ export default function App() {
                           ? "QUESTIONS READY. THINKING CAPS ON."
                         : screen === "rock-paper-scissors"
                           ? "ONE PLAYER. THREE MOVES."
+                        : screen === "noughts-crosses"
+                          ? "THREE SQUARES. ONE WINNER."
                     : screen === "home"
                       ? "LESS SCROLLING. MORE LAUGHING."
                       : screen === "play"
@@ -827,6 +835,8 @@ export default function App() {
                             ? "Choose a pack, answer together and chase the perfect round."
                           : screen === "rock-paper-scissors"
                             ? "Take on the computer and race to five wins."
+                          : screen === "noughts-crosses"
+                            ? "Play solo against the computer or pass the device to a friend."
                     : screen === "home"
                       ? "Bring your favourite people. We’ll bring the games."
                       : screen === "games"
@@ -862,7 +872,7 @@ export default function App() {
                 How to play
               </button>
             )}
-            {(["would-you-rather", "hangman", "trivia", "rock-paper-scissors"] as Screen[]).includes(screen) && (
+            {(["would-you-rather", "hangman", "trivia", "rock-paper-scissors", "noughts-crosses"] as Screen[]).includes(screen) && (
               <button className="secondary" onClick={() => go("games")}>
                 <ArrowLeft size={17} />
                 All games
@@ -910,6 +920,7 @@ export default function App() {
           {screen === "hangman" && <Hangman />}
           {screen === "trivia" && <TriviaQuiz />}
           {screen === "rock-paper-scissors" && <RockPaperScissors />}
+          {screen === "noughts-crosses" && <NoughtsCrosses />}
           {(screen === "home" || screen === "games") && (
             <button className="panel uno-banner" onClick={() => go("uno")}>
               <Layers size={30} />
@@ -1059,12 +1070,12 @@ export default function App() {
                 <button
                   className="primary"
                   onClick={() => {
-                    setPlayerName("");
+                    setEditingPlayer(state.players[0]?.id ?? null);
                     setModal({ type: "players" });
                   }}
                 >
-                  <Plus size={18} />
-                  Add a player
+                  <Shapes size={18} />
+                  Change player logos
                 </button>
               </div>
               {!state.players.length ? (
@@ -1155,29 +1166,6 @@ export default function App() {
                           }
                         >
                           +5
-                        </button>
-                        <button
-                          className="icon-button remove-player"
-                          aria-label={`Remove ${p.name}`}
-                          onClick={() =>
-                            confirm(
-                              `Remove ${p.name}?`,
-                              "Their score will be removed from the current scoreboard. Finished rounds remain in your memories.",
-                              async () => {
-                                await update((s) => {
-                                  if (activeRound(s)?.status === "active")
-                                    throw new Error(
-                                      "Finish the round before changing players.",
-                                    );
-                                  s.players = s.players.filter(
-                                    (x) => x.id !== p.id,
-                                  );
-                                });
-                              },
-                            )
-                          }
-                        >
-                          <X size={15} />
                         </button>
                       </div>
                     </div>
@@ -2584,7 +2572,7 @@ export default function App() {
               screen === item.id ||
               (item.id === "games" && screen === "play") ||
                 (item.id === "games" &&
-                  (["would-you-rather", "hangman", "trivia", "rock-paper-scissors"] as Screen[]).includes(screen))
+                  (["would-you-rather", "hangman", "trivia", "rock-paper-scissors", "noughts-crosses"] as Screen[]).includes(screen))
                 ? "page"
                 : undefined
             }
@@ -2634,69 +2622,60 @@ export default function App() {
           {modal.type === "players" && (
             <>
               <p className="muted">
-                No accounts. Just names, faces and friendly competition.
+                Your family players stay ready for every game. Choose a player,
+                then pick their logo.
               </p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  run(
-                    () => update((s) => addPlayer(s, playerName, avatar)),
-                    "Welcome to the crew!",
-                  ).then((ok) => {
-                    if (ok) {
-                      setPlayerName("");
-                      setAvatar(
-                        avatars[(state.players.length + 1) % avatars.length],
-                      );
-                    }
-                  });
-                }}
-              >
-                <label>
-                  Player name
-                  <input
-                    aria-label="Player name"
-                    placeholder="Who’s joining?"
-                    value={playerName}
-                    maxLength={24}
-                    required
-                    onChange={(e) => setPlayerName(e.target.value)}
-                  />
-                </label>
-                <label>Pick a little personality</label>
-                <div className="avatar-picker">
-                  {avatars.map((a) => (
-                    <button
-                      type="button"
-                      aria-label={`Choose ${a} avatar`}
-                      aria-pressed={avatar === a}
-                      key={a}
-                      className={avatar === a ? "chosen" : ""}
-                      onClick={() => setAvatar(a)}
-                    >
-                      {a}
-                    </button>
-                  ))}
-                </div>
-                <button className="primary wide" type="submit">
-                  <Plus size={18} />
-                  Add player
-                </button>
-              </form>
-              <div className="modal-crew">
+              <div className="player-logo-tabs" aria-label="Choose a player">
                 {state.players.map((p) => (
-                  <span key={p.id}>
-                    {p.avatar} {p.name}
-                  </span>
+                  <button
+                    type="button"
+                    key={p.id}
+                    className={logoPlayer?.id === p.id ? "chosen" : ""}
+                    aria-pressed={logoPlayer?.id === p.id}
+                    onClick={() => setEditingPlayer(p.id)}
+                  >
+                    <span>{p.avatar}</span>{p.name}
+                  </button>
                 ))}
               </div>
+              {logoPlayer && (
+                <>
+                  <label className="logo-picker-label">
+                    Pick {logoPlayer.name}’s logo
+                  </label>
+                  <div className="avatar-picker">
+                    {avatars.map((nextAvatar) => (
+                      <button
+                        type="button"
+                        aria-label={`Use ${nextAvatar} for ${logoPlayer.name}`}
+                        aria-pressed={logoPlayer.avatar === nextAvatar}
+                        key={nextAvatar}
+                        className={logoPlayer.avatar === nextAvatar ? "chosen" : ""}
+                        onClick={() =>
+                          run(
+                            () =>
+                              update((s) => {
+                                const player = s.players.find(
+                                  (item) => item.id === logoPlayer.id,
+                                );
+                                if (player) player.avatar = nextAvatar;
+                              }),
+                            `${logoPlayer.name}’s logo updated.`,
+                          )
+                        }
+                      >
+                        {nextAvatar}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <button
                 className="secondary wide"
                 onClick={() => {
                   closeModal();
                   go("games");
                 }}
-                disabled={state.players.length < 1}
               >
                 All here. Let’s play <ArrowRight size={16} />
               </button>

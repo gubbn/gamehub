@@ -1,0 +1,86 @@
+.nac-zone { color: #3e3746; }
+.nac-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 22px;
+}
+.nac-toolbar .segmented { margin-top: 8px; }
+.nac-game {
+  min-height: 520px;
+  margin-top: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 5px solid #63b8ae;
+}
+.nac-score {
+  width: min(560px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #e6e0e8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.nac-score > div {
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px;
+  border-right: 1px solid #e6e0e8;
+}
+.nac-score > div:last-child { border-right: 0; }
+.nac-score span { color: #8c8392; font-size: 9px; font-weight: 800; }
+.nac-score strong { font: 800 24px/1 "Trebuchet MS", sans-serif; }
+.nac-score .x svg { color: #cf4f6d; }
+.nac-score .o svg { color: #318f8b; }
+.nac-status {
+  min-height: 25px;
+  margin: 25px 0 17px;
+  font: 800 18px/1.35 "Trebuchet MS", "Segoe UI", sans-serif;
+}
+.nac-board {
+  width: min(360px, 90vw);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 7px;
+  padding: 7px;
+  border-radius: 8px;
+  background: #ded7e2;
+}
+.nac-board button {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+  color: #40384a;
+}
+.nac-board button:not(:disabled):hover,
+.nac-board button:not(:disabled):focus-visible {
+  background: #fff7d7;
+  transform: scale(0.97);
+}
+.nac-board button.x { color: #cf4f6d; }
+.nac-board button.o { color: #318f8b; }
+.nac-board button.winner { background: #fff2b7; }
+.nac-game > .primary { margin-top: 22px; }
+
+@media (max-width: 760px), (max-width: 980px) and (max-height: 500px) {
+  .nac-toolbar { align-items: stretch; flex-direction: column; padding: 16px; }
+  .nac-toolbar .segmented { width: 100%; }
+  .nac-toolbar .segmented button { flex: 1; }
+  .nac-game { min-height: 440px; padding: 18px 12px 24px; }
+  .nac-score > div { min-height: 62px; grid-template-columns: 1fr; justify-items: center; gap: 3px; padding: 8px 3px; }
+  .nac-score svg { display: none; }
+  .nac-status { margin-top: 20px; font-size: 17px; }
+  .nac-board { width: min(330px, 88vw); }
+}

@@ -26,7 +26,6 @@ describe("IndexedDB persistence", () => {
     expect(() => validateBackup(exported)).toThrow(/invalid game state/);
   });
   it("serializes concurrent score changes without losing points", async () => {
-    await update((s) => addPlayer(s, "Alex", "🌞"));
     await Promise.all(
       Array.from({ length: 20 }, () =>
         update((s) => {
@@ -38,6 +37,7 @@ describe("IndexedDB persistence", () => {
   });
   it("persists players, winners and scores through a database close/reopen", async () => {
     await update((s) => {
+      s.players = [];
       addPlayer(s, "Alex", "🌞");
       addPlayer(s, "Sam", "🦊");
       const r = startRound(s, "quick-stop");
@@ -51,8 +51,6 @@ describe("IndexedDB persistence", () => {
   });
   it("round-trips backups and pauses restored running timers", async () => {
     await update((s) => {
-      addPlayer(s, "Alex", "🌞");
-      addPlayer(s, "Sam", "🦊");
       const r = startRound(s, "quick-stop");
       r.deadline = Date.now() + 5000;
       s.toolTimer.deadline = Date.now() + 60000;
